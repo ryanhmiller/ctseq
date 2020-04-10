@@ -13,6 +13,9 @@ def run_subcommand(args):
     elif args.subcommand=='align':
         from .align import run
 
+    elif args.subcommand=='call_molecules':
+        from .callmolecules import run
+
 
     # run the chosen command
     run(args)
@@ -39,6 +42,13 @@ def main():
     # individual tool parsers #
     ###########################
 
+    ############
+    # add_umis #
+    ############
+    parser_add_umis = subparsers.add_parser('add_umis', help='properly format and add unique molecular identifiers to your fastq files')
+    parser_add_umis.add_argument('-r','--refdir', help='full path to directory where you want to build your reference methylation genome\nmust contain a reference file for your intended targets with extension (.fa)', required=True)
+    parser_add_umis.set_defaults(func=run_subcommand)
+
     ###################
     # make_methyl_ref #
     ###################
@@ -46,9 +56,9 @@ def main():
     parser_make_methyl_ref.add_argument('-r','--refDir', help='Full path to directory where you want to build your reference methylation genome. Must contain a reference file for your intended targets with extension (.fa)', required=True)
     parser_make_methyl_ref.set_defaults(func=run_subcommand)
 
-    ###################
-    # make_methyl_ref #
-    ###################
+    #########
+    # align #
+    #########
     parser_align = subparsers.add_parser('align', help='trims adapters and aligns reads with Bismark')
     parser_align.add_argument('-r','--refDir', help='Full path to directory where you have already built your methylation reference files', required=True)
     parser_align.add_argument('-f','--fqDir', help='Full path to directory where you have your fastq files', required=True)
@@ -56,13 +66,16 @@ def main():
     parser_align.add_argument('--rExt', help='unique extension of fastq files containing forward reads', required=True)
     parser_align.set_defaults(func=run_subcommand)
 
+    #########
+    # align #
+    #########
+    parser_align = subparsers.add_parser('call_molecules', help='call molecules from the aligned reads from Bismark')
+    parser_align.add_argument('-r','--refDir', help='Full path to directory where you have already built your methylation reference files', required=True)
+    parser_align.add_argument('-s','--samDir', help='Full path to directory where your .sam files are located', required=True)
+    parser_align.add_argument('-c','--consensus', help='consensus threshold to make consensus methylation call from all the reads with the same UMI (e.g. 0.9)', required=True)
+    parser_align.add_argument('-p','--processes', help='number of processes', required=True)
+    parser_align.set_defaults(func=run_subcommand)
 
-    ############
-    # add_umis #
-    ############
-    parser_add_umis = subparsers.add_parser('add_umis', help='properly format and add unique molecular identifiers to your fastq files')
-    parser_add_umis.add_argument('-r','--refdir', help='full path to directory where you want to build your reference methylation genome\nmust contain a reference file for your intended targets with extension (.fa)', required=True)
-    parser_add_umis.set_defaults(func=run_subcommand)
 
     #######################################
     # parse args and call proper function #

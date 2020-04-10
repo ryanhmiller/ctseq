@@ -240,7 +240,6 @@ def run(args):
     # try:
     os.chdir(fqDir)
 
-
     cutAdapters(args)
 
     align(args)
