@@ -12,8 +12,10 @@ import re
 from simplesam import Reader, Writer
 import os
 from umi_tools import UMIClusterer
-import itertools
+from functools import partial
+import gc
 from . import utilities
+
 
 
 ##### LOAD REFERENCE SEQUENCES INTO DICT #####
@@ -168,14 +170,13 @@ class ReadsChunkResults:
 
 
 # function to analyze the reads from a temp/intermediate file
-def analyzeReads(myIntermedFileName,refSeq):
-
+def analyzeReads(myIntermedFileName,myRefSeq,myRefCGindices):
     locusUMIreadsDict={} # locus : UMI : allReadsforthatUMI
     #meetsCoverageDict={} # {locus}{set(UMI)}
 
     readDict={} # fragName:totalReads
     # initialize readDict
-    for frag in refSeq:
+    for frag in myRefSeq:
         readDict[frag]=0
 
 
@@ -202,16 +203,16 @@ def analyzeReads(myIntermedFileName,refSeq):
 
                 if "N" not in fUMI and "N" not in rUMI: ### ADDED 11/21/19 - PREVENTS US FROM ANALYZING READS THAT HAVE "N"s IN THE UMIs
 
-                    forwardMethylation=Read(forwardRead, refSeq, refCGindices)
+                    forwardMethylation=Read(forwardRead, myRefSeq, myRefCGindices)
 
-                    reverseMethylation=Read(reverseRead, refSeq, refCGindices)
+                    reverseMethylation=Read(reverseRead, myRefSeq, myRefCGindices)
 
                     myLocus=forwardMethylation.locus
 
                     #ADDED - keeping track of total number of reads - PUT THIS AT THE END
                     readDict[myLocus]+=1
 
-                    locusCGindices=refCGindices[myLocus]
+                    locusCGindices=myRefCGindices[myLocus]
 
                     myUMI=forwardMethylation.umi
 
@@ -281,65 +282,72 @@ def mergeLocusUMIreadDicts(dict1,dict2):
         elif locus not in dict1 and locus in dict2:
             dict1[locus]=dict2[locus]
 
-# # function to merge the readDepthDict
-# def mergeReadDepthDicts(dict1,dict2):
-#     # merging things into dict1
-#     for locus in set(list(dict1.keys())+list(dict2.keys())):
-#         if locus in dict1 and locus in dict2:
-#             dict1[locus]+=dict2[locus]
-#
-#         elif locus not in dict1 and locus in dict2:
-#             dict1[locus]=dict2[locus]
-#
+# function to merge the readDepthDict
+def mergeReadDepthDicts(dict1,dict2):
+    # merging things into dict1
+    for locus in set(list(dict1.keys())+list(dict2.keys())):
+        if locus in dict1 and locus in dict2:
+            dict1[locus]+=dict2[locus]
 
-def call_molecules(args,samFileName):
-    refDir=args.refDir
-    samDir=args.samDir
-    consensus=float(args.consensus)
-    processes=int(args.processes)
+        elif locus not in dict1 and locus in dict2:
+            dict1[locus]=dict2[locus]
 
-    ####################
-    ### SET UP STUFF ###
-    ####################
-    # get reference .fa file
-    refFilePath=getReferenceFile(refDir)
+# class MethylationAnalysisResults:
+#     def __init__(self, myFinalDict, myMeetsCoverageDict):
+#         self.finalDict=myFinalDict
+#         self.meetsCoverageDict=myMeetsCoverageDict
 
-    ### get reference sequences from reference file
-    (refSeq,refLociNames)=getRefSeq(refFilePath)
+# def call_molecules(args,samFileName):
+    # refDir=args.refDir
+    # samDir=args.samDir
+    # consensus=float(args.consensus)
+    # processes=int(args.processes)
+    #
+    # ####################
+    # ### SET UP STUFF ###
+    # ####################
+    # # get reference .fa file
+    # refFilePath=getReferenceFile(refDir)
+    #
+    # ### get reference sequences from reference file
+    # (refSeq,refLociNames)=getRefSeq(refFilePath)
+    #
+    # ### get indices of cgs in reference sequences
+    # refCGindices=getRefCGindices(refSeq)
+    # ####################
+    #
+    # sampleName=samFileName.split(".")[0]
+    # print('\n**************')
+    # print('Analyzing reads from '+sampleName+' '+utilities.getDate())
+    # print('**************\n')
+    #
+    # # initialize UMI clusterer
+    # # clusterer = UMIClusterer(cluster_method="directional")
+    #
+    #
+    # #### split sam file into smaller files (n=numProcesses)
+    # os.chdir(samDir)
+    # intermedFileNames=splitSamFile(samFileName,processes)
+    # gc.collect() # free up unreferenced memory
 
-    ### get indices of cgs in reference sequences
-    refCGindices=getRefCGindices(refSeq)
-    ####################
-
-    sampleName=samFileName.split(".")[0]
-    print('\n**************')
-    print('Analyzing reads from '+sampleName+' '+utilities.getDate())
-    print('**************\n')
-
-    # initialize UMI clusterer
-    # clusterer = UMIClusterer(cluster_method="directional")
-
-
-
-    #### split sam file into smaller files (n=numProcesses)
-    os.chdir(samDir)
-    intermedFileNames=splitSamFile(samFileName,processes)
-
-    ### analyze the reads from the temp .sam files for this sample in parallel
-    chunksAnalyzingReads=[]
-    print('analyzing the reads for ',sampleName,'in parallel',utilities.getDate())
-    p = Pool(processes)
-    chunksAnalyzingReads=p.map(analyzeReads, intermedFileNames, itertools.repeat(refSeq, len(intermedFileNames)))
-    print("exiting pool",datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-
-
-    #### merge all the locusUMIreadDicts and readDepthDicts
-    for i in range(1,len(chunksAnalyzingReads),1): # we are starting at second element in list; we are appending everything into the first dictionary in this list
-        mergeLocusUMIreadDicts(chunksAnalyzingReads[0].locusUMIreadsDict,chunksAnalyzingReads[i].locusUMIreadsDict)
-        chunksAnalyzingReads[i].locusUMIreadsDict="" # free up some RAM
-
-        mergeReadDepthDicts(chunksAnalyzingReads[0].readDepthDict,chunksAnalyzingReads[i].readDepthDict)
-        chunksAnalyzingReads[i].readDepthDict="" # free up some RAM
+    # ### analyze the reads from the temp .sam files for this sample in parallel
+    # chunksAnalyzingReads=[]
+    # print('analyzing the reads for ',sampleName,'in parallel',utilities.getDate())
+    # p = Pool(processes)
+    # # chunksAnalyzingReads=p.map(analyzeReads, intermedFileNames, itertools.repeat(refSeq, len(intermedFileNames)))
+    #
+    # analyzeReads_multipleArgs=partial(analyzeReads, myRefSeq=refSeq, myRefCGindices=refCGindices) # see 'Example 2' - http://python.omics.wiki/multiprocessing_map/multiprocessing_partial_function_multiple_arguments, this is to use 1 dynamic fxn arguments and these 2 static arguments for multiprocessing
+    # chunksAnalyzingReads=p.map(analyzeReads_multipleArgs, intermedFileNames)
+    # print("exiting pool",utilities.getDate())
+    #
+    #
+    # #### merge all the locusUMIreadDicts and readDepthDicts
+    # for i in range(1,len(chunksAnalyzingReads),1): # we are starting at second element in list; we are appending everything into the first dictionary in this list
+    #     mergeLocusUMIreadDicts(chunksAnalyzingReads[0].locusUMIreadsDict,chunksAnalyzingReads[i].locusUMIreadsDict)
+    #     chunksAnalyzingReads[i].locusUMIreadsDict="" # free up some RAM
+    #
+    #     mergeReadDepthDicts(chunksAnalyzingReads[0].readDepthDict,chunksAnalyzingReads[i].readDepthDict)
+    #     chunksAnalyzingReads[i].readDepthDict="" # free up some RAM
 
 
     # # split up combined locusUMIreadsDict into separate dicts to analyze in parallel
@@ -349,7 +357,7 @@ def call_molecules(args,samFileName):
     #         self.refCGindices=myRefCGindices
     #         self.xCoverage=myXcoverage
     #         self.methylConcordance=myMethylConcordance
-    #
+
     # numLociPerChunk=len(refLociNames)//numProcesses
     #
     # splitUpMethInput=[]
@@ -380,111 +388,144 @@ def call_molecules(args,samFileName):
     #
     # # clear up RAM
     # del chunksAnalyzingReads
-    #
-    #
-    # class MethylationAnalysisResults:
-    #     def __init__(self, myFinalDict, myMeetsCoverageDict):
-    #         self.finalDict=myFinalDict
-    #         self.meetsCoverageDict=myMeetsCoverageDict
-    #
-    #
-    # #### counting molecules and methlyation concordance for a subset of loci
-    # def analyzeMethylation(myMethylationInput):
-    #     finalDict={} # nested dictionaries --> {locus}{methylationString}:count
-    #     meetsCoverageDict={}
-    #
-    #
-    #     for locus in myMethylationInput.locusUMIreadsDict:
-    #         # initialize meetsCoverageDict
-    #         meetsCoverageDict[locus]=0
-    #
-    #
-    #         #################################
-    #         ### need to combine UMIs here ###
-    #
-    #         myLocusUMIs={}   # UMI (in byte form, b'ATGTC') : len(number reads with UMI)
-    #
-    #         for UMI in myMethylationInput.locusUMIreadsDict[locus]:
-    #             myLocusUMIs[UMI.encode()]=len(myMethylationInput.locusUMIreadsDict[locus][UMI])
-    #
-    #
-    #         clustered_umis = clusterer(myLocusUMIs, threshold=1)
-    #
-    #
-    #         for cluster in clustered_umis:
-    #             if len(cluster) > 1:
-    #                 headUMI="" # we'll just combine all the reads for all the UMIs in this cluster into the dictionary entry for the first UMI (called "headUMI" here)
-    #                 for i in range(1,len(cluster),1): # since combining everything into first UMI's entry, start on second entry
-    #                     headUMI=cluster[0].decode()
-    #                     currUMI=cluster[i]
-    #                     currUMI=currUMI.decode()
-    #                     myMethylationInput.locusUMIreadsDict[locus][headUMI]+=myMethylationInput.locusUMIreadsDict[locus][currUMI] # combine reads together into one UMI entry
-    #                     del myMethylationInput.locusUMIreadsDict[locus][currUMI] # remove extra UMI entry
-    #
-    #         # print("locus: ",locus)
-    #         # print(len(myLocusUMIs))
-    #         # print(len(clustered_umis))
-    #         # print(len(list(myMethylationInput.locusUMIreadsDict[locus].keys())))
-    #         # print(clustered_umis[:5],"\n")
-    #
-    #         #################################
-    #         #################################
-    #
-    #         for UMI in myMethylationInput.locusUMIreadsDict[locus]:
-    #             #locus=row[0]
-    #             #UMI=row[1]
-    #
-    #             if len(myMethylationInput.locusUMIreadsDict[locus][UMI]) >= myMethylationInput.xCoverage:
-    #                 meetsCoverageDict[locus]+=1
-    #
-    #                 consensusString=""
-    #
-    #                 for i in range(0,len(myMethylationInput.refCGindices[locus]),1):
-    #                     meprocesses=0
-    #                     totalReads=0
-    #
-    #                     for copyTemplate in myMethylationInput.locusUMIreadsDict[locus][UMI]:
-    #                         if copyTemplate[i]=="Z":
-    #                             meprocesses+=1
-    #                         totalReads+=1
-    #
-    #                     if float(meprocesses)/totalReads >= myMethylationInput.methylConcordance:
-    #                         consensusString+="Z"
-    #                     else:
-    #                         consensusString+="z"
-    #
-    #
-    #                 # finalDict --- locus:consensusString:+=1
-    #                 if locus in finalDict:
-    #
-    #                     # check if mutation logged for locus
-    #                     if consensusString in finalDict[locus]:
-    #                         finalDict[locus][consensusString]+=1
-    #
-    #                     # add new mutation entry
-    #                     else:
-    #                         finalDict[locus][consensusString]=1
-    #
-    #                 # add new locus entry
-    #                 else:
-    #                     consensusStringDict={consensusString:1}
-    #                     finalDict[locus] = consensusStringDict
-    #
-    #     return MethylationAnalysisResults(finalDict,meetsCoverageDict)
-    #
+
+
+# class MethylationAnalysisResults:
+#     def __init__(self, myFinalDict, myMeetsCoverageDict):
+#         self.finalDict=myFinalDict
+#         self.meetsCoverageDict=myMeetsCoverageDict
+
+# split up combined locusUMIreadsDict into separate dicts to analyze in parallel
+class MethylationChunkInput:
+    def __init__(self, myLocusUMIreadsDict, myRefCGindices, myConsensusCutoff,mySampleName, myTempNumber, myOutputDir):
+        self.locusUMIreadsDict=myLocusUMIreadsDict
+        self.refCGindices=myRefCGindices
+        self.myConsensusCutoff=myConsensusCutoff
+        self.mySampleName=mySampleName
+        self.myTempNumber=myTempNumber
+        self.myOutputDir=myOutputDir
+
+
+#### counting molecules and methlyation concordance for a subset of loci
+def callMolecules(myMethylationInput):
+    finalDict={} # nested dictionaries --> {locus}{methylationString}:count
+    meetsCoverageDict={}
+
+    mySampleName=myMethylationInput.mySampleName
+    tempFileNumber=myMethylationInput.myTempNumber
+    myOutputDir=myMethylationInput.myOutputDir
+    tempFileName=myOutputDir+mySampleName+"_TEMP_ALLUMIS_"+str(tempFileNumber)+".txt"
+    tempFile=open(tempFileName,"w")
+
+
+
+    for locus in myMethylationInput.locusUMIreadsDict:
+        # initialize meetsCoverageDict
+        meetsCoverageDict[locus]=0
+
+
+        #################################
+        ### need to combine UMIs here ###
+        #################################
+
+        # myLocusUMIs={}   # UMI (in byte form, b'ATGTC') : len(number reads with UMI)
+        #
+        # for UMI in myMethylationInput.locusUMIreadsDict[locus]:
+        #     myLocusUMIs[UMI.encode()]=len(myMethylationInput.locusUMIreadsDict[locus][UMI])
+        #
+        #
+        # clustered_umis = clusterer(myLocusUMIs, threshold=1)
+        #
+        #
+        # for cluster in clustered_umis:
+        #     if len(cluster) > 1:
+        #         headUMI="" # we'll just combine all the reads for all the UMIs in this cluster into the dictionary entry for the first UMI (called "headUMI" here)
+        #         for i in range(1,len(cluster),1): # since combining everything into first UMI's entry, start on second entry
+        #             headUMI=cluster[0].decode()
+        #             currUMI=cluster[i]
+        #             currUMI=currUMI.decode()
+        #             myMethylationInput.locusUMIreadsDict[locus][headUMI]+=myMethylationInput.locusUMIreadsDict[locus][currUMI] # combine reads together into one UMI entry
+        #             del myMethylationInput.locusUMIreadsDict[locus][currUMI] # remove extra UMI entry
+
+        # print("locus: ",locus)
+        # print(len(myLocusUMIs))
+        # print(len(clustered_umis))
+        # print(len(list(myMethylationInput.locusUMIreadsDict[locus].keys())))
+        # print(clustered_umis[:5],"\n")
+
+        #################################
+        #################################
+
+        for UMI in myMethylationInput.locusUMIreadsDict[locus]:
+            #locus=row[0]
+            #UMI=row[1]
+            consensusString=""
+            consensusMeth=0
+            consensusUnmeth=0
+
+
+            # if len(myMethylationInput.locusUMIreadsDict[locus][UMI]) >= myMethylationInput.myConsensusCoverage:
+            #     meetsCoverageDict[locus]+=1
+            #
+            #     consensusString=""
+
+            for i in range(0,len(myMethylationInput.refCGindices[locus]),1):
+                methReads=0
+                totalReads=0
+
+                for copyTemplate in myMethylationInput.locusUMIreadsDict[locus][UMI]:
+                    if copyTemplate[i]=="Z":
+                        methReads+=1
+                    totalReads+=1
+
+                if float(methReads)/totalReads >= myMethylationInput.myConsensusCutoff:
+                    consensusString+="Z"
+                    consensusMeth+=1
+                else:
+                    consensusString+="z"
+                    consensusUnmeth+=1
+
+            consensusLength=consensusMeth+consensusUnmeth
+
+            myOutputLine=[mySampleName,locus,UMI,consensusString,str(consensusMeth),str(consensusLength),str(consensusMeth/consensusLength),str(len(myMethylationInput.locusUMIreadsDict[locus][UMI]))]
+
+            tempFile.write("\t".join(myOutputLine)+"\n")
+
+
+
+
+                # # finalDict --- locus:consensusString:+=1
+                # if locus in finalDict:
+                #
+                #     # check if mutation logged for locus
+                #     if consensusString in finalDict[locus]:
+                #         finalDict[locus][consensusString]+=1
+                #
+                #     # add new mutation entry
+                #     else:
+                #         finalDict[locus][consensusString]=1
+                #
+                # # add new locus entry
+                # else:
+                #     consensusStringDict={consensusString:1}
+                #     finalDict[locus] = consensusStringDict
+
+    tempFile.close()
+    #return MethylationAnalysisResults(finalDict,meetsCoverageDict)
+#
     #
     # ### put this stuff into pools
     #
     # # finalResults=[]
     # # for methylationChunk in splitUpMethInput:
-    # #     finalResults.append(analyzeMethylation(methylationChunk))
+    # #     finalResults.append(callMolecules(methylationChunk))
     #
     #
     # ## analyzing the methylation for this sample in parallel
     # finalResults=[]
     # print("entering pool to analyze methylation for SAMPLE",sampleName,datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     # p = Pool(numProcesses)
-    # finalResults=p.map(analyzeMethylation, splitUpMethInput)
+    # finalResults=p.map(callMolecules, splitUpMethInput)
     # print("exiting pool",datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     #
     #
@@ -537,8 +578,8 @@ def call_molecules(args,samFileName):
 def run(args):
     refDir=args.refDir
     samDir=args.samDir
-    consensus=args.consensus
-    processes=args.processes
+    consensus=float(args.consensus)
+    processes=int(args.processes)
 
     #############
     # arg check #
@@ -551,14 +592,109 @@ def run(args):
     utilities.fileCheck(refDir,".fa")
     utilities.fileCheck(samDir,".sam")
 
-    #########################
-    # continue with command #
-    #########################
+    # make sure sam file dir has '/' on end
+    if samDir[-1]!='/':
+        samDir+='/'
+    ####################
+    ### SET UP STUFF ###
+    ####################
+    # get reference .fa file
+    refFilePath=getReferenceFile(refDir)
+
+    ### get reference sequences from reference file
+    (refSeq,refLociNames)=getRefSeq(refFilePath)
+
+    ### get indices of cgs in reference sequences
+    refCGindices=getRefCGindices(refSeq)
+    ####################
+
 
     os.chdir(samDir)
-
     listOfSamFiles=utilities.getFiles(samDir,'.sam')
 
     ## loop through sam files
     for samFileName in listOfSamFiles:
-        call_molecules(args,samFileName)
+        # call_molecules(args,samFileName)
+        if "TEMP" not in samFileName: # so don't start analyzing old temp files
+            sampleName=samFileName.split(".")[0]
+            print('\n**************')
+            print('Analyzing reads from '+sampleName+' '+utilities.getDate())
+            print('**************\n')
+
+            # initialize UMI clusterer
+            # clusterer = UMIClusterer(cluster_method="directional")
+
+            #### split sam file into smaller files (n=numProcesses)
+            os.chdir(samDir)
+            intermedFileNames=splitSamFile(samFileName,processes)
+            gc.collect() # free up unreferenced memory
+
+            ### analyze the reads from the temp .sam files for this sample in parallel
+            chunksAnalyzingReads=[]
+            print('analyzing the reads for ',sampleName,'in parallel',utilities.getDate())
+            p = Pool(processes)
+
+            analyzeReads_multipleArgs=partial(analyzeReads, myRefSeq=refSeq, myRefCGindices=refCGindices) # see 'Example 2' - http://python.omics.wiki/multiprocessing_map/multiprocessing_partial_function_multiple_arguments, this is to use 1 dynamic fxn arguments and these 2 static arguments for multiprocessing
+            chunksAnalyzingReads=p.map(analyzeReads_multipleArgs, intermedFileNames)
+            print("exiting pool",utilities.getDate())
+
+            #### merge all the locusUMIreadDicts and readDepthDicts
+            for i in range(1,len(chunksAnalyzingReads),1): # we are starting at second element in list; we are appending everything into the first dictionary in this list
+                mergeLocusUMIreadDicts(chunksAnalyzingReads[0].locusUMIreadsDict,chunksAnalyzingReads[i].locusUMIreadsDict)
+                chunksAnalyzingReads[i].locusUMIreadsDict="" # free up some RAM
+
+                mergeReadDepthDicts(chunksAnalyzingReads[0].readDepthDict,chunksAnalyzingReads[i].readDepthDict)
+                chunksAnalyzingReads[i].readDepthDict="" # free up some RAM
+
+            # figure out how many loci to analyze in each process
+            numLociPerChunk=len(refLociNames)//processes
+
+            splitUpMethInput=[]
+            splitUpLociNames=[]
+            readDict=chunksAnalyzingReads[0].readDepthDict
+
+            # free up some RAM
+            chunksAnalyzingReads[0].readDepthDict=""
+
+            myIndex=0
+            for i in range(0,processes,1):
+                tempDict={}
+                tempLoci=[]
+
+                if i != (processes-1):
+                    tempLoci=refLociNames[myIndex:myIndex+numLociPerChunk]
+                    myIndex+=numLociPerChunk
+                else:
+                    tempLoci=refLociNames[myIndex:] # last chunk of data will contain data for remaining loci
+
+                for locus in tempLoci:
+                    if locus in chunksAnalyzingReads[0].locusUMIreadsDict:
+                        tempDict[locus]=chunksAnalyzingReads[0].locusUMIreadsDict[locus]
+                    #else:
+
+                splitUpLociNames.append(tempLoci)
+                splitUpMethInput.append(MethylationChunkInput(myLocusUMIreadsDict=tempDict,myRefCGindices=refCGindices,myConsensusCutoff=consensus,mySampleName=sampleName,myTempNumber=i,myOutputDir=samDir))
+
+            # clear up RAM
+            del chunksAnalyzingReads
+
+            # finalResults=[]
+            print("entering pool to analyze methylation for Sample",sampleName,utilities.getDate())
+            p = Pool(processes)
+            # finalResults=p.map(analyzeMethylation, splitUpMethInput)
+            p.map(callMolecules, splitUpMethInput)
+            print("exiting pool",utilities.getDate())
+
+            # combining temp output files
+            print("combining temp output files (allUMIs)",sampleName,utilities.getDate())
+            outputFileName=samDir+sampleName+"_allCollapsedMol_"+str(consensus)+"consensus.txt"
+
+            with open(outputFileName,"w") as outputFile:
+                myHeaderline="sample\tlocus\tUMI\tconsensusZstring_{0}\tmethCGs\ttotalCGs\tmethRatio\tnumReads\n".format(str(consensus))
+                outputFile.write(myHeaderline)
+
+            catTempFilesCommand="cat "+samDir+sampleName+"_TEMP_ALLUMIS_* >> "+outputFileName
+            os.system(catTempFilesCommand)
+
+            # rmTempFilesCommand="rm "+outputDir+sampleName+"_TEMPallUMIs*"
+            # os.system(rmTempFilesCommand)
