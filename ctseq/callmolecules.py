@@ -3,8 +3,8 @@ import sys
 import re
 from simplesam import Reader, Writer
 import os
-from umi_tools import UMIClusterer
 from functools import partial
+from umi_tools import UMIClusterer
 import gc
 from . import utilities
 
@@ -42,28 +42,6 @@ def getRefCGindices(refSeqDict):
         refCGindices[frag]=cgIndices
 
     return(refCGindices)
-
-
-def getReferenceFile(refDir):
-    os.chdir(refDir)
-
-    refFiles=utilities.getFiles(refDir,'.fa')
-
-    refFilePath=refDir
-
-    if refFilePath[-1]!='/':
-        refFilePath+='/'
-
-    if len(refFiles) > 1:
-        print('\n**ERROR**')
-        print('You have more than 1 \'.fa\' reference file at: '+refDir)
-        print('\n**Exiting**')
-        sys.exit()
-    else:
-        refFilePath+=refFiles[0]
-
-    return(refFilePath)
-
 
 def splitSamFile(samFileName,numProcesses):
     # find the number of header lines
@@ -274,27 +252,65 @@ def mergeReadDepthDicts(dict1,dict2):
 
 # split up combined locusUMIreadsDict into separate dicts to analyze in parallel
 class MethylationChunkInput:
-    def __init__(self, myLocusUMIreadsDict, myRefCGindices, myConsensusCutoff,mySampleName, myTempNumber, myOutputDir):
+    def __init__(self, myLocusUMIreadsDict, myRefCGindices, myConsensusCutoff,mySampleName, myTempNumber, myOutputDir, myUMIcollapseThreshold, myUMIcollapseAlg):
         self.locusUMIreadsDict=myLocusUMIreadsDict
         self.refCGindices=myRefCGindices
         self.myConsensusCutoff=myConsensusCutoff
         self.mySampleName=mySampleName
         self.myTempNumber=myTempNumber
         self.myOutputDir=myOutputDir
+        self.myUMIcollapseThreshold=myUMIcollapseThreshold
+        self.myUMIcollapseAlg=myUMIcollapseAlg
 
 #### counting molecules and methlyation concordance for a subset of loci
 def callMolecules(myMethylationInput):
-    finalDict={} # nested dictionaries --> {locus}{methylationString}:count
-
     mySampleName=myMethylationInput.mySampleName
     tempFileNumber=myMethylationInput.myTempNumber
     myOutputDir=myMethylationInput.myOutputDir
-    tempFileName=myOutputDir+mySampleName+"_TEMP_ALLUMIS_"+str(tempFileNumber)+".txt"
+    collapseThreshold=myMethylationInput.myUMIcollapseThreshold
+    collapseAlg=myMethylationInput.myUMIcollapseAlg
+
+
+    tempFileName=myOutputDir+mySampleName+"_TEMP_ALLMOLECULES_"+str(tempFileNumber)+".txt"
     tempFile=open(tempFileName,"w")
 
 
 
-    for locus in myMethylationInput.locusUMIreadsDict:                
+    for locus in myMethylationInput.locusUMIreadsDict:
+
+        #####################
+        ### collapse UMIs ###
+        #####################
+
+        myLocusUMIs={}   # UMI (in byte form, b'ATGTC') : len(number reads with UMI)
+        
+        for UMI in myMethylationInput.locusUMIreadsDict[locus]:
+            myLocusUMIs[UMI.encode()]=len(myMethylationInput.locusUMIreadsDict[locus][UMI])
+        
+        
+        # initialize UMI clusterer
+        clusterer = UMIClusterer(cluster_method=collapseAlg)        
+        clustered_umis = clusterer(myLocusUMIs, threshold=collapseThreshold)
+        
+        
+        for cluster in clustered_umis:
+            if len(cluster) > 1:
+                headUMI="" # we'll just combine all the reads for all the UMIs in this cluster into the dictionary entry for the first UMI (called "headUMI" here)
+                for i in range(1,len(cluster),1): # since combining everything into first UMI's entry, start on second entry
+                    headUMI=cluster[0].decode()
+                    currUMI=cluster[i]
+                    currUMI=currUMI.decode()
+                    myMethylationInput.locusUMIreadsDict[locus][headUMI]+=myMethylationInput.locusUMIreadsDict[locus][currUMI] # combine reads together into one UMI entry
+                    del myMethylationInput.locusUMIreadsDict[locus][currUMI] # remove extra UMI entry
+
+        # print("locus: ",locus)
+        # print(len(myLocusUMIs))
+        # print(len(clustered_umis))
+        # print(len(list(myMethylationInput.locusUMIreadsDict[locus].keys())))
+        # print(clustered_umis[:5],"\n")
+
+        #################################
+        #################################                
 
         for UMI in myMethylationInput.locusUMIreadsDict[locus]:
             consensusString=""
@@ -328,9 +344,12 @@ def callMolecules(myMethylationInput):
 
 def run(args):
     refDir=args.refDir
-    samDir=args.samDir
+    samDir=args.dir
     consensus=float(args.consensus)
     processes=int(args.processes)
+    umiCollapseThreshold=int(args.umiThreshold)
+    umiCollapseAlg=args.umiCollapseAlg
+
 
     #############
     # arg check #
@@ -346,11 +365,12 @@ def run(args):
     # make sure sam file dir has '/' on end
     if samDir[-1]!='/':
         samDir+='/'
+
     ####################
     ### SET UP STUFF ###
     ####################
     # get reference .fa file
-    refFilePath=getReferenceFile(refDir)
+    refFilePath=utilities.getReferenceFile(refDir)
 
     ### get reference sequences from reference file
     (refSeq,refLociNames)=getRefSeq(refFilePath)
@@ -369,7 +389,7 @@ def run(args):
         if "TEMP" not in samFileName: # so don't start analyzing old temp files
             sampleName=samFileName.split(".")[0]
             print('\n**************')
-            print('Analyzing reads from '+sampleName+' '+utilities.getDate())
+            print('Calling molecules for',sampleName,utilities.getDate())
             print('**************\n')
 
             #### split sam file into smaller files (n=numProcesses)
@@ -421,29 +441,36 @@ def run(args):
                     #else:
 
                 splitUpLociNames.append(tempLoci)
-                splitUpMethInput.append(MethylationChunkInput(myLocusUMIreadsDict=tempDict,myRefCGindices=refCGindices,myConsensusCutoff=consensus,mySampleName=sampleName,myTempNumber=i,myOutputDir=samDir)) #,myUMIcollapseThreshold=umiCollapseThreshold,myUMIcollapseAlg=umiCollapseAlg))
+                splitUpMethInput.append(MethylationChunkInput(myLocusUMIreadsDict=tempDict, myRefCGindices=refCGindices, myConsensusCutoff=consensus, mySampleName=sampleName, myTempNumber=i, myOutputDir=samDir, myUMIcollapseThreshold=umiCollapseThreshold, myUMIcollapseAlg=umiCollapseAlg))
 
 
             # clear up RAM
             del chunksAnalyzingReads
 
             # finalResults=[]
-            print("entering pool to analyze methylation for Sample",sampleName,utilities.getDate())
+            print("entering pool to analyze molecules for sample",sampleName,utilities.getDate())
             p = Pool(processes)
             # finalResults=p.map(analyzeMethylation, splitUpMethInput)
             p.map(callMolecules, splitUpMethInput)
             print("exiting pool",utilities.getDate())
 
             # combining temp output files
-            print("combining temp output files (allUMIs)",sampleName,utilities.getDate())
-            outputFileName=samDir+sampleName+"_allCollapsedMol_"+str(consensus)+"consensus.txt"
+            print("combining temp output files (ALLMOLECULES)",sampleName,utilities.getDate())
+            # outputFileName=samDir+sampleName+"_allMolecules_"+str(consensus)+"consensus.txt"
+            outputFileName=samDir+sampleName+"_allMolecules.txt"
 
             with open(outputFileName,"w") as outputFile:
                 myHeaderline="sample\tlocus\tUMI\tconsensusZstring_{0}\tmethCGs\ttotalCGs\tmethRatio\tnumReads\n".format(str(consensus))
                 outputFile.write(myHeaderline)
 
-            catTempFilesCommand="cat "+samDir+sampleName+"_TEMP_ALLUMIS_* >> "+outputFileName
+            print("combining temp files to create", outputFileName.split('/')[-1], utilities.getDate())
+            catTempFilesCommand="cat "+samDir+sampleName+"_TEMP_ALLMOLECULES_* >> "+outputFileName
             os.system(catTempFilesCommand)
 
+            print("removing temp files for",sampleName,utilities.getDate())
             rmTempFilesCommand="rm "+samDir+sampleName+"_TEMP*"
             os.system(rmTempFilesCommand)
+
+            print('\n**************')
+            print('Done calling molecules for',sampleName,utilities.getDate())
+            print('**************\n')

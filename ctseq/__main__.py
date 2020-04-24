@@ -16,7 +16,8 @@ def run_subcommand(args):
     elif args.subcommand=='call_molecules':
         from .callmolecules import run
 
-
+    elif args.subcommand=='call_methylation':
+        from .callmethylation import run
     # run the chosen command
     run(args)
 
@@ -60,20 +61,34 @@ def main():
     # align #
     #########
     parser_align = subparsers.add_parser('align', help='trims adapters and aligns reads with Bismark')
-    parser_align.add_argument('-r','--refDir', help='Full path to directory where you have already built your methylation reference files', required=True)
-    parser_align.add_argument('-f','--fqDir', help='Full path to directory where you have your fastq files', required=True)
-    parser_align.add_argument('--fExt', help='unique extension of fastq files containing forward reads', required=True)
-    parser_align.add_argument('--rExt', help='unique extension of fastq files containing forward reads', required=True)
+    parser_align.add_argument('-r','--refDir', help='Full path to directory where you have already built your methylation reference files (required)', required=True)
+    parser_align.add_argument('-d','--dir', help='Full path to directory where you have your fastq files (required)', required=True)
+    parser_align.add_argument('--fExt', help='unique extension of fastq files containing forward reads (required)', required=True)
+    parser_align.add_argument('--rExt', help='unique extension of fastq files containing forward reads (required)', required=True)
     parser_align.set_defaults(func=run_subcommand)
 
-    #########
-    # align #
-    #########
+    ##################
+    # call_molecules #
+    ##################
     parser_align = subparsers.add_parser('call_molecules', help='call molecules from the aligned reads from Bismark')
-    parser_align.add_argument('-r','--refDir', help='Full path to directory where you have already built your methylation reference files', required=True)
-    parser_align.add_argument('-s','--samDir', help='Full path to directory where your .sam files are located', required=True)
-    parser_align.add_argument('-c','--consensus', help='consensus threshold to make consensus methylation call from all the reads with the same UMI (e.g. 0.9)', required=True)
-    parser_align.add_argument('-p','--processes', help='number of processes', required=True)
+    parser_align.add_argument('-r','--refDir', help='Full path to directory where you have already built your methylation reference files (required)', required=True)
+    parser_align.add_argument('-d','--dir', help='Full path to directory where your .sam files are located (required)', required=True)
+    parser_align.add_argument('-c','--consensus', help='consensus threshold to make consensus methylation call from all the reads with the same UMI (default=0.9)', default=0.9)
+    parser_align.add_argument('-p','--processes', help='number of processes (default=1; default settings could take a long time to run)', default=1)
+    parser_align.add_argument('-u','--umiThreshold', help='UMIs with this edit distance will be collapsed together, default=0 (don\'t collapse)', default=0)
+    parser_align.add_argument('-a','--umiCollapseAlg', help='algorithm used to collapse UMIs, options: default=directional', default='directional')
+    parser_align.set_defaults(func=run_subcommand)
+
+    ####################
+    # call_methylation #
+    ####################
+    parser_align = subparsers.add_parser('call_methylation', help='call methylation from the \'*allMolecules.txt\' file')
+    parser_align.add_argument('-r','--refDir', help='Full path to directory where you have already built your methylation reference files (required)', required=True)
+    parser_align.add_argument('-d','--dir', help='Full path to directory where your \'*allMolecules.txt\' files are located (required)', required=True)
+    parser_align.add_argument('-p','--processes', help='number of processes (default=1)', required=True)
+    parser_align.add_argument('-c','--cisCG', help='cis-CG threshold to determine if a molecule is methylated (default=0.75)', default=0.75)
+    parser_align.add_argument('-u','--umiThreshold', help='UMIs with this edit distance will be collapsed together (default=0 which won\'t collapse UMIs)', default=0)
+    parser_align.add_argument('-a','--umiCollapseAlg', help='algorithm used to collapse UMIs, options (default=directional)', default='directional')
     parser_align.set_defaults(func=run_subcommand)
 
 

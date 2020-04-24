@@ -45,3 +45,24 @@ def naturalSort(mylist):
     convert = lambda text: int(text) if text.isdigit() else text.lower()
     alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
     return sorted(mylist, key = alphanum_key)
+
+
+def getReferenceFile(refDir):
+    os.chdir(refDir)
+
+    refFiles=getFiles(refDir,'.fa')
+
+    refFilePath=refDir
+
+    if refFilePath[-1]!='/':
+        refFilePath+='/'
+
+    if len(refFiles) > 1:
+        print('\n**ERROR**')
+        print('You have more than 1 \'.fa\' reference file at: '+refDir)
+        print('\n**Exiting**')
+        sys.exit()
+    else:
+        refFilePath+=refFiles[0]
+
+    return(refFilePath)

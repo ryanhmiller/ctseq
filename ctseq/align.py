@@ -217,7 +217,7 @@ def align(args):
 
 def run(args):
     refDir=args.refDir
-    fqDir=args.fqDir
+    fqDir=args.dir
     fExt=args.fExt
     rExt=args.rExt
 
