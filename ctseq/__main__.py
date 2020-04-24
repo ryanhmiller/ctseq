@@ -74,6 +74,8 @@ def main():
     parser_align.add_argument('-s','--samDir', help='Full path to directory where your .sam files are located', required=True)
     parser_align.add_argument('-c','--consensus', help='consensus threshold to make consensus methylation call from all the reads with the same UMI (e.g. 0.9)', required=True)
     parser_align.add_argument('-p','--processes', help='number of processes', required=True)
+    parser_align.add_argument('-u','--umiThreshold', help='UMIs with this edit distance will be collapsed together, default=0 (don\'t collapse)', default=0)
+    parser_align.add_argument('-a','--umiCollapseAlg', help='algorithm used to collapse UMIs, options: default=directional', default='directional')
     parser_align.set_defaults(func=run_subcommand)
 
 
