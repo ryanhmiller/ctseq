@@ -87,8 +87,7 @@ def main():
     parser_align.add_argument('-d','--dir', help='Full path to directory where your \'*allMolecules.txt\' files are located (required)', required=True)
     parser_align.add_argument('-p','--processes', help='number of processes (default=1)', required=True)
     parser_align.add_argument('-c','--cisCG', help='cis-CG threshold to determine if a molecule is methylated (default=0.75)', default=0.75)
-    parser_align.add_argument('-u','--umiThreshold', help='UMIs with this edit distance will be collapsed together (default=0 which won\'t collapse UMIs)', default=0)
-    parser_align.add_argument('-a','--umiCollapseAlg', help='algorithm used to collapse UMIs, options (default=directional)', default='directional')
+    parser_align.add_argument('-m','--moleculeThreshold', help='number of reads needed to be counted as a unique molecule (default=5)', default=5)
     parser_align.set_defaults(func=run_subcommand)
 
 
