@@ -5,62 +5,42 @@ from functools import partial
 import subprocess
 # from collections import defaultdict
 from . import utilities
+import sys
 
 class Locus:
   def __init__(self):
-      self.name=""
+      self.name=''
       self.methMolecules=0
       self.unmethMolecules=0
       self.totalMolecules=0
-      self.totalReads=0      
+      self.totalReads=0
 
 def callMethylation(fileName,myBlacklistUMI,myCisCGcutoff,myMoleculeThreshold):
     locusDict={} # fragName:locusObject
-    sampleName=fileName.split("_")[0]
-    
-    with open(fileName,"r") as infile:
-        # infile.readline()
+    sampleName=fileName.split('_')[0]
 
-        # methylationDict={} # frag:%methylated
-        # readDepthDict={} # frag:readDepth
-        # umiDict={} # frag:molDepth
-        # methMolDict={} # frag:#methMol
+    with open(fileName,'r') as infile:
 
         for line in infile:
 
-            line=line.strip("\n").split("\t")            
+            line=line.strip('\n').split('\t')
             # print(line)
-            if line[0] != "sample" and line[1] != "locus": # making sure we're not reading the header line
+            if line[0] != 'sample' and line[1] != 'locus': # making sure we're not reading the header line
                 umi=line[2]
-                zString=line[3]                
+                zString=line[3]
 
-                if zString!="NA" and umi != myBlacklistUMI:
+                if zString!='NA' and umi != myBlacklistUMI:
                     try:
-                        locus=line[1]       
-                        # totalCGs=int(line[5])
+                        locus=line[1]
                         methRatio=float(line[6])
-                        #molecules=int(line[5])
-                        #molDepth=int(line[6])
                         readDepth=int(line[7])
                         # totalReadsPerSample[sampleName]+=readDepth
                     except:
                         print(line)
 
-
-
-                    ##### NEED TO COUNT UMI DEPTH + READ DEPTH #####
-
-                    # if methRatio >= cgMethylationCutoff:
-                    #
-                    #     print locus, str(molecules),str(methRatio), str(cgMethylationCutoff)
-
-
                     if locus not in locusDict:
                         newLocus=Locus()
                         newLocus.name=locus
-                        # newLocus.totalCGs=totalCGs
-                        #newLocus.molDepth=molDepth
-                        #newLocus.totalReads=readDepth
                         locusDict[locus]=newLocus
 
                     locusDict[locus].totalReads+=readDepth
@@ -89,7 +69,7 @@ def combineLocusData(myListOfLociDicts):
 
     for tempLocusDict in myListOfLociDicts:
         for myLocus in tempLocusDict:
-            if myLocus not in combinedLociDict:             
+            if myLocus not in combinedLociDict:
                 newLocus=Locus()
                 newLocus.name=myLocus
                 combinedLociDict[myLocus]=newLocus
@@ -97,14 +77,55 @@ def combineLocusData(myListOfLociDicts):
             combinedLociDict[myLocus].methMolecules+=tempLocusDict[myLocus].methMolecules
             combinedLociDict[myLocus].unmethMolecules+=tempLocusDict[myLocus].unmethMolecules
             combinedLociDict[myLocus].totalMolecules+=tempLocusDict[myLocus].totalMolecules
-            combinedLociDict[myLocus].totalReads+=tempLocusDict[myLocus].totalReads   
+            combinedLociDict[myLocus].totalReads+=tempLocusDict[myLocus].totalReads
 
     return(combinedLociDict)
+
+def writeReport(myListOfLociDicts,reportType,myRefFrags,mySampleNames,myRunName):
+    #write header line
+    reportName=''
+    if reportType == 'methMolecules':
+        reportName='methylatedMolecules'
+    elif reportType == 'totalMolecules':
+        reportName='totalMolecules'
+    elif reportType == 'totalReads':
+        reportName='totalReads'
+    elif reportType == 'methRatio':
+        reportName='methylationRatio'
+
+    outputFileName=myRunName+'_'+reportName+'.txt'
+
+    with open(outputFileName, 'w') as outputFile:
+        # write header line
+        headerLine=['Locus']+mySampleNames
+        outputFile.write('\t'.join(headerLine)+'\n')
+
+        # write out results, locus by locus
+        for locus in myRefFrags:
+            outputLine=[locus]
+            for sample in mySampleNames:
+                elementToAdd=''
+                if locus in myListOfLociDicts[sample]:
+                    if reportType == 'methRatio':
+                        methMol=myListOfLociDicts[sample][locus].methMolecules
+                        totalMol=myListOfLociDicts[sample][locus].totalMolecules
+                        if totalMol == 0:
+                            elementToAdd='NA'
+                        else:
+                            elementToAdd=str(methMol/totalMol)
+                    else:
+                        elementToAdd=str(getattr(myListOfLociDicts[sample][locus],reportType)) # for more info: https://stackoverflow.com/questions/2157035/accessing-an-attribute-using-a-variable-in-python
+                else:
+                    elementToAdd='NA' # if locus not in dictionary, there were no molecules for that locus in that sample
+
+                outputLine.append(elementToAdd)
+            outputFile.write('\t'.join(outputLine)+'\n')
 
 
 def run(args):
     refDir=args.refDir
     fileDir=args.dir
+    nameRun=args.nameRun
     processes=int(args.processes)
     cisCGcutoff=float(args.cisCG)
     moleculeThreshold=int(args.moleculeThreshold)
@@ -121,7 +142,7 @@ def run(args):
     utilities.validDir(fileDir)
 
     # check that refDir/fileDir actually have the necessary files in them
-    utilities.fileCheck(refDir,".fa")
+    utilities.fileCheck(refDir,'.fa')
     utilities.fileCheck(fileDir,fileExt)
 
     # make sure file dir has '/' on end
@@ -137,28 +158,32 @@ def run(args):
     # get list of reference fragment names
     refFrags=[]
 
-    with open(refFileName, "r") as refFile:
+    with open(refFileName, 'r') as refFile:
         lines=refFile.readlines()
         for i in range(0,len(lines),2):
-            fragName=lines[i].strip("\n")[1:]
-            # seq=lines[i+1].strip("\n")
+            fragName=lines[i].strip('\n')[1:]
+            # seq=lines[i+1].strip('\n')
             # seq=seq.upper()
             refFrags.append(fragName)
 
 
     os.chdir(fileDir)
 
-    listOfFiles=utilities.getFiles(fileDir,fileExt)    
-    
+    listOfFiles=utilities.getFiles(fileDir,fileExt)
+
     # ####################
-    mySamples=[] # builds out list of all samples in directory
+    allSamples=[] # builds out list of all samples in directory
 
     lociDictsAllSamples={}
 
+    print('\n**************')
+    print('CALLING METHYLATION FOR RUN',nameRun,utilities.getDate())
+    print('**************\n')
+
     for fileName in listOfFiles:
-        # split input file into N (# processes) 
-        sampleName=fileName.split("_")[0]
-        mySamples.append(sampleName)
+        # split input file into N (# processes)
+        sampleName=fileName.split('_')[0]
+        allSamples.append(sampleName)
 
         print('\n**************')
         print('Calling methylation for',sampleName,utilities.getDate())
@@ -167,98 +192,41 @@ def run(args):
         # grab number of lines in file
         totalLines = int(subprocess.getoutput('wc -l '+fileName).split(' ')[0])
         linesPerTempFile=(totalLines//processes)+1
-        
-        # split main file into temp files (N=number of processes)        
+
+        # split main file into temp files (N=number of processes)
         print('splitting',fileName,'into',str(processes),'temp files',utilities.getDate())
         splitFileCmd='split -l '+str(linesPerTempFile)+' -d '+sampleName+fileExt+' --additional-suffix=.txt '+sampleName+tempFileBase
         os.system(splitFileCmd)
 
-
-        tempFiles=glob.glob(sampleName+'_allMolecules_TEMP_*')
+        tempFiles=utilities.naturalSort(glob.glob(sampleName+'_allMolecules_TEMP_*'))
         # print(tempFiles)
-        print("entering pool to analyze methylation for sample",sampleName,utilities.getDate())
 
+        # entering pool to analyze the methylation
+        print('entering pool to analyze methylation for sample',sampleName,utilities.getDate())
         p = Pool(processes)
         callMethylation_multipleArgs=partial(callMethylation, myBlacklistUMI=blacklistUMI,myCisCGcutoff=cisCGcutoff,myMoleculeThreshold=moleculeThreshold) # see 'Example 2' - http://python.omics.wiki/multiprocessing_map/multiprocessing_partial_function_multiple_arguments, this is to use 1 dynamic fxn arguments and these 2 static arguments for multiprocessing
         methylResults=p.map(callMethylation_multipleArgs, tempFiles)
-        print("exiting pool",utilities.getDate())
+        print('exiting pool',utilities.getDate())
+
+        ## remove temp files
+        print('removing temp files for',sampleName,utilities.getDate())
+        rmTempFilesCmd='rm '+sampleName+'_allMolecules_TEMP_*'+'.txt'
+        os.system(rmTempFilesCmd)
 
         combinedLociDict=combineLocusData(myListOfLociDicts=methylResults)
 
         lociDictsAllSamples[sampleName]=combinedLociDict
         # break
-    print(list(lociDictsAllSamples.keys()))
 
 
-
-        # splitForwardFileCmd=['split','-l',str(linesPerFile),'-d',forwardFile,'--additional-suffix=.fastq',sampleName+'_forward_TEMP_']
-
-
-        # with open(fileName,"r") as infile:
-        #     infile.readline()
-
-        #     sampleName=fileName.split("_")[0]
-        #     mySamples.append(sampleName)
-
-        #     locusDict={} # fragName:locusObject
-
-        #     methylationDict={} # frag:%methylated
-        #     readDepthDict={} # frag:readDepth
-        #     umiDict={} # frag:molDepth
-        #     methMolDict={} # frag:#methMol
-
-        #     for line in infile:
-
-        #         line=line.strip("\n").split("\t")
-
-        #         umi=line[2]
-        #         zString=line[3]                
-
-        #         if zString!="NA" and umi != blacklistUMI:
-        #             locus=line[1]       
-        #             totalCGs=int(line[5])
-        #             methRatio=float(line[6])
-        #             #molecules=int(line[5])
-        #             #molDepth=int(line[6])
-        #             readDepth=int(line[7])
-        #             totalReadsPerSample[sampleName]+=readDepth
+    print('writing reports for ',nameRun,utilities.getDate())
+    writeReport(reportType='totalMolecules',myListOfLociDicts=lociDictsAllSamples,myRefFrags=refFrags,mySampleNames=allSamples,myRunName=nameRun)
+    writeReport(reportType='methMolecules',myListOfLociDicts=lociDictsAllSamples,myRefFrags=refFrags,mySampleNames=allSamples,myRunName=nameRun)
+    writeReport(reportType='totalReads',myListOfLociDicts=lociDictsAllSamples,myRefFrags=refFrags,mySampleNames=allSamples,myRunName=nameRun)
+    writeReport(reportType='methRatio',myListOfLociDicts=lociDictsAllSamples,myRefFrags=refFrags,mySampleNames=allSamples,myRunName=nameRun)
+    print('finished writing reports for ',nameRun,utilities.getDate())
 
 
-        #             ##### NEED TO COUNT UMI DEPTH + READ DEPTH #####
-
-        #             # if methRatio >= cgMethylationCutoff:
-        #             #
-        #             #     print locus, str(molecules),str(methRatio), str(cgMethylationCutoff)
-
-
-        #             if locus not in locusDict:
-        #                 newLocus=Locus()
-        #                 newLocus.name=locus
-        #                 newLocus.totalCGs=totalCGs
-        #                 #newLocus.molDepth=molDepth
-        #                 #newLocus.totalReads=readDepth
-        #                 locusDict[locus]=newLocus
-
-        #             locusDict[locus].totalReads+=readDepth
-
-
-        #             #### updated 4/15/20 - different read depth cutoffs for meth and unmeth mols
-        #             # if methRatio >= methCutoff and readDepth >= methCoverageCutoff: # this is a methylated molecule and passes read depth cutoff for meth molecules
-        #             #     locusDict[locus].molDepth+=1
-        #             #     locusDict[locus].methMolecules+=1
-        #             # elif methRatio < methCutoff and readDepth >= unmethCoverageCutoff: # this is a methylated molecule and passes read depth cutoff for meth molecules
-        #             #     locusDict[locus].molDepth+=1
-        #             #     locusDict[locus].unmethMolecules+=1
-
-        #             if readDepth >= cisCGcutoff: # checking if we can count this as a unique molecule
-        #                 locusDict[locus].molDepth+=1
-        #                 if methRatio >= methCutoff:
-        #                     locusDict[locus].methMolecules+=1
-        #                 else:
-        #                     locusDict[locus].unmethMolecules+=1
-
-
-
-
-
-
+    print('\n**************')
+    print('DONE CALLING METHYLATION FOR RUN',nameRun,utilities.getDate())
+    print('**************\n')

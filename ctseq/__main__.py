@@ -85,6 +85,7 @@ def main():
     parser_align = subparsers.add_parser('call_methylation', help='call methylation from the \'*allMolecules.txt\' file')
     parser_align.add_argument('-r','--refDir', help='Full path to directory where you have already built your methylation reference files (required)', required=True)
     parser_align.add_argument('-d','--dir', help='Full path to directory where your \'*allMolecules.txt\' files are located (required)', required=True)
+    parser_align.add_argument('-n','--nameRun', help='number of reads needed to be counted as a unique molecule (required)', required=True)
     parser_align.add_argument('-p','--processes', help='number of processes (default=1)', required=True)
     parser_align.add_argument('-c','--cisCG', help='cis-CG threshold to determine if a molecule is methylated (default=0.75)', default=0.75)
     parser_align.add_argument('-m','--moleculeThreshold', help='number of reads needed to be counted as a unique molecule (default=5)', default=5)
