@@ -5,34 +5,35 @@ import glob
 from . import utilities
 
 #### static variables (make this more flexible later on)
-forwardReadAdapter='AGTGTGGGAGGGTAGTTGGTGTT' #rcHA2 AGTGTGGGAGGGTAGTTGGTGT*T, forwardRead_3_primer_adapter
-reverseReadAdapter='ACTCCCCACCTTCCTCATTCTCTAAGACGGTGT' #rcHA1, reverseRead_3_primer_adapter
-cutadaptCores=str(18)
-bismarkCores=str(6)
-trimmedFileExt='.TRIMMED.fastq'
+# args.forwardAdapter='AGTGTGGGAGGGTAGTTGGTGTT' #rcHA2 AGTGTGGGAGGGTAGTTGGTGT*T, forwardRead_3_primer_adapter
+# args.reverseAdapter='ACTCCCCACCTTCCTCATTCTCTAAGACGGTGT' #rcHA1, reverseRead_3_primer_adapter
+# cutadaptCores=str(18)
+# bismarkCores=str(6)
+
 readsPerFile=1500000
 
 
-def cutAdapters(args):
+def cutAdapters(args,fExt,rExt,newForExt,newRevExt):
     print('\n**************')
     print('Trimming adapters with Cutadapt '+utilities.getDate())
     print('**************\n')
 
+    cutadaptCores=str(args.cutadaptCores)
     # loop through fastq files
-    allForwardFiles=glob.glob('*'+args.fExt)
+    allForwardFiles=utilities.naturalSort(glob.glob('*'+fExt))
 
     for forwardFile in allForwardFiles:
         sampleName=forwardFile.split("_")[0]
 
-        reverseFile=glob.glob(sampleName+'*'+args.rExt)[0]
+        reverseFile=glob.glob(sampleName+'*'+rExt)[0]
 
-        forwardTrimmedFile=forwardFile+trimmedFileExt
-        reverseTrimmedFile=reverseFile+trimmedFileExt
+        forwardTrimmedFile=sampleName+newForExt
+        reverseTrimmedFile=sampleName+newRevExt
 
         # print(forwardTrimmedFile,forwardFile)
         # print(reverseTrimmedFile,reverseFile)
-        # print(forwardReadAdapter,reverseReadAdapter)
-        cutadaptCmd=['cutadapt','-a',forwardReadAdapter,'-A',reverseReadAdapter,'--cores',cutadaptCores,'--minimum-length',str(10),'-o',forwardTrimmedFile,'-p',reverseTrimmedFile,forwardFile,reverseFile]
+        # print(args.forwardAdapter,args.reverseAdapter)
+        cutadaptCmd=['cutadapt','-a',args.forwardAdapter,'-A',args.reverseAdapter,'--cores',cutadaptCores,'--minimum-length',str(10),'-o',forwardTrimmedFile,'-p',reverseTrimmedFile,forwardFile,reverseFile]
 
 
         externalProcess = subprocess.Popen(cutadaptCmd)
@@ -44,6 +45,10 @@ def cutAdapters(args):
             print('Something went wrong with cutadapt. Exiting...')
             sys.exit()
 
+        print('Removing ',forwardFile,'and',reverseFile,utilities.getDate())
+        removeFiles([forwardFile,reverseFile]) # removing input files because no longer need them
+
+        break
     print('\n**************')
     print('Done trimming adapters with Cutadapt '+utilities.getDate())
     print('**************\n')
@@ -77,7 +82,7 @@ def removeFiles(listOfFiles):
         sys.exit()
 
 
-def align(args):
+def align(args,newForExt,newRevExt):
     print('\n**************')
     print('Aligning reads with Bismark '+utilities.getDate())
     print('**************\n')
@@ -87,13 +92,13 @@ def align(args):
     ############################
     # loop through fastq files #
     ############################
-    allForwardFiles=glob.glob('*'+args.fExt+trimmedFileExt)
+    allForwardFiles=utilities.naturalSort(glob.glob('*'+newForExt))
 
     for forwardFile in allForwardFiles:
         sampleName=forwardFile.split("_")[0]
         sampleNames.append(sampleName)
 
-        reverseFile=glob.glob(sampleName+'*'+args.rExt+trimmedFileExt)[0]
+        reverseFile=glob.glob(sampleName+'*'+newRevExt)[0]
 
         ###############################################################
         ## split fastq files up here if needed to run through Bismark #
@@ -126,7 +131,7 @@ def align(args):
             subsetNum=forwardSplitFile.split(".")[0].split("_")[3]
             reverseSplitFile=forwardSplitFile.replace("forward","reverse")
 
-            bismarkCmd=['bismark','--bowtie2','--multicore',str(bismarkCores),'--ambiguous','--unmapped','--genome_folder',
+            bismarkCmd=['bismark','--bowtie2','--multicore',str(args.bismarkCores),'--ambiguous','--unmapped','--genome_folder',
                         args.refDir,'-1',forwardSplitFile,'-2',reverseSplitFile]
 
             print('Aligning '+forwardSplitFile+' with Bismark '+utilities.getDate())
@@ -163,7 +168,7 @@ def align(args):
 
         combinedSamFile=sampleName+'.sam'
 
-        bam2samCmd=['samtools','view','-@',cutadaptCores,'-h',combinedBamFile]
+        bam2samCmd=['samtools','view','-@',str(args.cutadaptCores),'-h',combinedBamFile]
 
         print('Converting '+sampleName+' bam file to sam format '+utilities.getDate())
 
@@ -205,7 +210,7 @@ def align(args):
         removeFiles([sampleName+".bam"])
 
 
-        print('\nDone aligning sample '+sampleName+' '+utilities.getDate()+"\n")
+        print('\nDone aligning sample '+sampleName+' '+utilities.getDate()+'\n')
 
 
         break
@@ -217,20 +222,26 @@ def align(args):
 
 def run(args):
     refDir=args.refDir
-    fqDir=args.dir
-    fExt=args.fExt
-    rExt=args.rExt
+    dir=args.dir
+    cutadaptCores=int(args.cutadaptCores)
+    bismarkCores=int(args.bismarkCores)
+
+    fExt='_forwardReadsWithUMIs.fastq'
+    rExt='_reverseReadsWithUMIs.fastq'
+
+    newForExt='_forwardReadsWithUMIsTRIMMED.fastq'
+    newRevExt='_reverseReadsWithUMIsTRIMMED.fastq'
 
     #############
     # arg check #
     #############
     # check that paths are valid
     utilities.validDir(refDir)
-    utilities.validDir(fqDir)
+    utilities.validDir(dir)
 
-    # check that fqDir actually has fastq files in it
-    utilities.fileCheck(fqDir,fExt)
-    utilities.fileCheck(fqDir,rExt)
+    # check that dir actually has fastq files in it
+    utilities.fileCheck(dir,fExt)
+    utilities.fileCheck(dir,rExt)
 
     #########################
     # continue with command #
@@ -238,8 +249,8 @@ def run(args):
 
     # make methylation reference genome with bismark
     # try:
-    os.chdir(fqDir)
+    os.chdir(dir)
 
-    cutAdapters(args)
+    cutAdapters(args,fExt=fExt,rExt=rExt,newForExt=newForExt,newRevExt=newRevExt)
 
-    align(args)
+    align(args,newForExt=newForExt,newRevExt=newRevExt)

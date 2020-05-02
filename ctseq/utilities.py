@@ -15,8 +15,8 @@ def validDir(path):
         print(path)
         print('\n')
         sys.exit()
-    else:
-        print("passdir")
+    # else:
+    #     print("passdir")
 
 def fileCheck(path,fileExt):
     os.chdir(path)
@@ -28,8 +28,8 @@ def fileCheck(path,fileExt):
         print('There are no ('+fileExt+') files at:\n'+path)
         print('Exiting...\n')
         sys.exit()
-    else:
-        print("passfile")
+    # else:
+    #     print("passfile")
 
 
 def getFiles(path,fileExt):
