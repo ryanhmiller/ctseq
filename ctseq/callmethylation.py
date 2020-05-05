@@ -113,6 +113,10 @@ def writeReport(myListOfLociDicts,reportType,myRefFrags,mySampleNames,myRunName)
                             elementToAdd='NA'
                         else:
                             elementToAdd=str(methMol/totalMol)
+                    elif reportType == 'totalMolecules' and myListOfLociDicts[sample][locus].totalMolecules==0:
+                        elementToAdd='NA'
+                    elif reportType == 'methMolecules' and myListOfLociDicts[sample][locus].totalMolecules==0:
+                        elementToAdd='NA'
                     else:
                         elementToAdd=str(getattr(myListOfLociDicts[sample][locus],reportType)) # for more info: https://stackoverflow.com/questions/2157035/accessing-an-attribute-using-a-variable-in-python
                 else:

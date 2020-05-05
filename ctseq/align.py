@@ -10,7 +10,7 @@ from . import utilities
 # cutadaptCores=str(18)
 # bismarkCores=str(6)
 
-readsPerFile=1500000
+# readsPerFile=1500000
 
 
 def cutAdapters(args,fExt,rExt,newForExt,newRevExt):
@@ -48,7 +48,6 @@ def cutAdapters(args,fExt,rExt,newForExt,newRevExt):
         print('Removing ',forwardFile,'and',reverseFile,utilities.getDate())
         removeFiles([forwardFile,reverseFile]) # removing input files because no longer need them
 
-        break
     print('\n**************')
     print('Done trimming adapters with Cutadapt '+utilities.getDate())
     print('**************\n')
@@ -104,7 +103,7 @@ def align(args,newForExt,newRevExt):
         ## split fastq files up here if needed to run through Bismark #
         ###############################################################
 
-        linesPerFile=readsPerFile*4
+        linesPerFile=args.readsPerFile*4
 
         splitForwardFileCmd=['split','-l',str(linesPerFile),'-d',forwardFile,'--additional-suffix=.fastq',sampleName+'_forward_TEMP_']
 
@@ -204,16 +203,21 @@ def align(args,newForExt,newRevExt):
 
 
         # rm unnecessary files for this sample
-        print('Removing temp files for '+sampleName+' '+utilities.getDate())
-        removeFiles(glob.glob(sampleName+'_*TEMP*'))
-        removeFiles(glob.glob(sampleName+'_*TRIMMED*'))
+        print('Removing temp files for',sampleName,utilities.getDate())
+        removeFiles(glob.glob(sampleName+'_*TEMP*.bam'))
+        removeFiles(glob.glob(sampleName+'_*TEMP*.fastq'))
+        removeFiles(glob.glob(sampleName+'_*TEMP*.fq.gz'))
+        removeFiles(glob.glob(sampleName+'_*ReadsWithUMIsTRIMMED.fastq'))
         removeFiles([sampleName+".bam"])
 
+        print('Renaming bismark report file',sampleName,utilities.getDate())
+        bismarkReportFileName=glob.glob(sampleName+'_*bismark_bt2_PE_report.txt')[0]
+        newBismarkReportFileName=sampleName+'_bismarkReport.txt'
+        renameBismarkReportCmd='mv '+bismarkReportFileName+' '+newBismarkReportFileName
+        os.system(renameBismarkReportCmd)
 
         print('\nDone aligning sample '+sampleName+' '+utilities.getDate()+'\n')
 
-
-        break
 
     print('\n**************')
     print('Done aligning reads with Bismark '+utilities.getDate())
@@ -225,6 +229,7 @@ def run(args):
     dir=args.dir
     cutadaptCores=int(args.cutadaptCores)
     bismarkCores=int(args.bismarkCores)
+    readsPerFile=int(args.readsPerFile)
 
     fExt='_forwardReadsWithUMIs.fastq'
     rExt='_reverseReadsWithUMIs.fastq'

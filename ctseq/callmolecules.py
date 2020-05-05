@@ -170,54 +170,54 @@ def analyzeReads(myIntermedFileName,myRefSeq,myRefCGindices):
                 fUMI=forwardRead.qname.split("+")[1]
                 rUMI=reverseRead.qname.split("+")[1]
 
-                if "N" not in fUMI and "N" not in rUMI: ### ADDED 11/21/19 - PREVENTS US FROM ANALYZING READS THAT HAVE "N"s IN THE UMIs
+                # if "N" not in fUMI and "N" not in rUMI: ### ADDED 11/21/19 - PREVENTS US FROM ANALYZING READS THAT HAVE "N"s IN THE UMIs
 
-                    forwardMethylation=Read(forwardRead, myRefSeq, myRefCGindices)
+                forwardMethylation=Read(forwardRead, myRefSeq, myRefCGindices)
 
-                    reverseMethylation=Read(reverseRead, myRefSeq, myRefCGindices)
+                reverseMethylation=Read(reverseRead, myRefSeq, myRefCGindices)
 
-                    myLocus=forwardMethylation.locus
+                myLocus=forwardMethylation.locus
 
-                    #ADDED - keeping track of total number of reads - PUT THIS AT THE END
-                    readDict[myLocus]+=1
+                #ADDED - keeping track of total number of reads - PUT THIS AT THE END
+                readDict[myLocus]+=1
 
-                    locusCGindices=myRefCGindices[myLocus]
+                locusCGindices=myRefCGindices[myLocus]
 
-                    myUMI=forwardMethylation.umi
+                myUMI=forwardMethylation.umi
 
-                    consensusIndexString=""
-                    consensusMethString=""
-                    consensusMethIndices=[]
-                    consensusUnmethIndices=[]
+                consensusIndexString=""
+                consensusMethString=""
+                consensusMethIndices=[]
+                consensusUnmethIndices=[]
 
 
-                    for index in locusCGindices:
-                        if index >= forwardMethylation.startCoord and index < reverseMethylation.startCoord and index in forwardMethylation.methIndices:
-                            consensusIndexString+=(str(index)+"Z")
-                            consensusMethString+="Z"
-                            consensusMethIndices.append(index)
-                        elif index > forwardMethylation.endCoord and index <= reverseMethylation.endCoord and index in reverseMethylation.methIndices:
-                            consensusIndexString+=(str(index)+"Z")
-                            consensusMethString+="Z"
-                            consensusMethIndices.append(index)
-                        elif index >= forwardMethylation.startCoord and index >= reverseMethylation.startCoord and index <= forwardMethylation.endCoord and index <= reverseMethylation.endCoord and index in forwardMethylation.methIndices and index in reverseMethylation.methIndices: #index >= forwardMethylation.startCoord was in here twice. changed second one to index >= reverseMethylation.startCoord
-                            consensusIndexString+=(str(index)+"Z")
-                            consensusMethString+="Z"
-                            consensusMethIndices.append(index)
-                        else:
-                            consensusIndexString+=(str(index)+"z")
-                            consensusMethString+="z"
-                            consensusUnmethIndices.append(index)
-
-                    if myLocus in locusUMIreadsDict:
-                        if myUMI in locusUMIreadsDict[myLocus]:
-                            locusUMIreadsDict[myLocus][myUMI].append(consensusMethString)
-                        else:
-                            locusUMIreadsDict[myLocus][myUMI]=[consensusMethString]
+                for index in locusCGindices:
+                    if index >= forwardMethylation.startCoord and index < reverseMethylation.startCoord and index in forwardMethylation.methIndices:
+                        consensusIndexString+=(str(index)+"Z")
+                        consensusMethString+="Z"
+                        consensusMethIndices.append(index)
+                    elif index > forwardMethylation.endCoord and index <= reverseMethylation.endCoord and index in reverseMethylation.methIndices:
+                        consensusIndexString+=(str(index)+"Z")
+                        consensusMethString+="Z"
+                        consensusMethIndices.append(index)
+                    elif index >= forwardMethylation.startCoord and index >= reverseMethylation.startCoord and index <= forwardMethylation.endCoord and index <= reverseMethylation.endCoord and index in forwardMethylation.methIndices and index in reverseMethylation.methIndices: #index >= forwardMethylation.startCoord was in here twice. changed second one to index >= reverseMethylation.startCoord
+                        consensusIndexString+=(str(index)+"Z")
+                        consensusMethString+="Z"
+                        consensusMethIndices.append(index)
                     else:
-                        readList=[consensusMethString]
-                        myUMIdict={myUMI:readList}
-                        locusUMIreadsDict[myLocus]=myUMIdict
+                        consensusIndexString+=(str(index)+"z")
+                        consensusMethString+="z"
+                        consensusUnmethIndices.append(index)
+
+                if myLocus in locusUMIreadsDict:
+                    if myUMI in locusUMIreadsDict[myLocus]:
+                        locusUMIreadsDict[myLocus][myUMI].append(consensusMethString)
+                    else:
+                        locusUMIreadsDict[myLocus][myUMI]=[consensusMethString]
+                else:
+                    readList=[consensusMethString]
+                    myUMIdict={myUMI:readList}
+                    locusUMIreadsDict[myLocus]=myUMIdict
 
     myResults=ReadsChunkResults(myIntermedFileName,readDict,locusUMIreadsDict)
     return myResults
@@ -283,16 +283,16 @@ def callMolecules(myMethylationInput):
         #####################
 
         myLocusUMIs={}   # UMI (in byte form, b'ATGTC') : len(number reads with UMI)
-        
+
         for UMI in myMethylationInput.locusUMIreadsDict[locus]:
             myLocusUMIs[UMI.encode()]=len(myMethylationInput.locusUMIreadsDict[locus][UMI])
-        
-        
+
+
         # initialize UMI clusterer
-        clusterer = UMIClusterer(cluster_method=collapseAlg)        
+        clusterer = UMIClusterer(cluster_method=collapseAlg)
         clustered_umis = clusterer(myLocusUMIs, threshold=collapseThreshold)
-        
-        
+
+
         for cluster in clustered_umis:
             if len(cluster) > 1:
                 headUMI="" # we'll just combine all the reads for all the UMIs in this cluster into the dictionary entry for the first UMI (called "headUMI" here)
@@ -310,7 +310,7 @@ def callMolecules(myMethylationInput):
         # print(clustered_umis[:5],"\n")
 
         #################################
-        #################################                
+        #################################
 
         for UMI in myMethylationInput.locusUMIreadsDict[locus]:
             consensusString=""
@@ -470,6 +470,12 @@ def run(args):
             print("removing temp files for",sampleName,utilities.getDate())
             rmTempFilesCommand="rm "+samDir+sampleName+"_TEMP*"
             os.system(rmTempFilesCommand)
+
+            print("compressing ",samFileName,utilities.getDate())
+            if os.path.exists(samFileName+'.gz'): # remove sampleName.sam.gz if it already exists (means you are running this again). Need to remove so pigz will work properly without needing user input
+                os.system('rm '+samFileName+'.gz')
+            compressSamFileCommand="pigz "+samFileName
+            os.system(compressSamFileCommand)
 
             print('\n**************')
             print('Done calling molecules for',sampleName,utilities.getDate())

@@ -72,31 +72,32 @@ def main():
     parser_align.add_argument('--reverseAdapter', help='adapter sequence to remove from REVERSE reads (default=ACTCCCCACCTTCCTCATTCTCTAAGACGGTGT)', default='ACTCCCCACCTTCCTCATTCTCTAAGACGGTGT')
     parser_align.add_argument('-c','--cutadaptCores', help='number of cores to use with Cutadapt. Default=1. Highly recommended to run with more than 1 core, try starting with 18 cores', default=1, type=int)
     parser_align.add_argument('-b','--bismarkCores', help='number of cores to use to align with Bismark. Default=1. Highly recommended to run with more than 1 core, try starting with 6 cores', default=1, type=int)
+    parser_align.add_argument('--readsPerFile', help='number of reads to analyze per fastq file (should only adjust this if you think you are too big of a file through bismark). Default=5000000 (5 million)', default=5000000, type=int)
     parser_align.set_defaults(func=run_subcommand)
 
     ##################
     # call_molecules #
     ##################
-    parser_align = subparsers.add_parser('call_molecules', help='call molecules from the aligned reads from Bismark')
-    parser_align.add_argument('-r','--refDir', help='Full path to directory where you have already built your methylation reference files (required)', required=True)
-    parser_align.add_argument('-d','--dir', help='Full path to directory where your .sam files are located (required)', required=True)
-    parser_align.add_argument('-c','--consensus', help='consensus threshold to make consensus methylation call from all the reads with the same UMI (default=0.9)', default=0.9, type=float)
-    parser_align.add_argument('-p','--processes', help='number of processes (default=1; default settings could take a long time to run)', default=1, type=int)
-    parser_align.add_argument('-u','--umiThreshold', help='UMIs with this edit distance will be collapsed together, default=0 (don\'t collapse)', default=0, type=int)
-    parser_align.add_argument('-a','--umiCollapseAlg', help='algorithm used to collapse UMIs, options: default=directional', default='directional')
-    parser_align.set_defaults(func=run_subcommand)
+    parser_callmolecules = subparsers.add_parser('call_molecules', help='call molecules from the aligned reads from Bismark')
+    parser_callmolecules.add_argument('-r','--refDir', help='Full path to directory where you have already built your methylation reference files (required)', required=True)
+    parser_callmolecules.add_argument('-d','--dir', help='Full path to directory where your .sam files are located (required)', required=True)
+    parser_callmolecules.add_argument('-c','--consensus', help='consensus threshold to make consensus methylation call from all the reads with the same UMI (default=0.9)', default=0.9, type=float)
+    parser_callmolecules.add_argument('-p','--processes', help='number of processes (default=1; default settings could take a long time to run)', default=1, type=int)
+    parser_callmolecules.add_argument('-u','--umiThreshold', help='UMIs with this edit distance will be collapsed together, default=0 (don\'t collapse)', default=0, type=int)
+    parser_callmolecules.add_argument('-a','--umiCollapseAlg', help='algorithm used to collapse UMIs, options: default=directional', default='directional')
+    parser_callmolecules.set_defaults(func=run_subcommand)
 
     ####################
     # call_methylation #
     ####################
-    parser_align = subparsers.add_parser('call_methylation', help='call methylation from the \'*allMolecules.txt\' file')
-    parser_align.add_argument('-r','--refDir', help='Full path to directory where you have already built your methylation reference files (required)', required=True)
-    parser_align.add_argument('-d','--dir', help='Full path to directory where your \'*allMolecules.txt\' files are located (required)', required=True)
-    parser_align.add_argument('-n','--nameRun', help='number of reads needed to be counted as a unique molecule (required)', required=True)
-    parser_align.add_argument('-p','--processes', help='number of processes (default=1)', default=1, type=int)
-    parser_align.add_argument('-c','--cisCG', help='cis-CG threshold to determine if a molecule is methylated (default=0.75)', default=0.75, type=float)
-    parser_align.add_argument('-m','--moleculeThreshold', help='number of reads needed to be counted as a unique molecule (default=5)', default=5, type=int)
-    parser_align.set_defaults(func=run_subcommand)
+    parser_callmethylation = subparsers.add_parser('call_methylation', help='call methylation from the \'*allMolecules.txt\' file')
+    parser_callmethylation.add_argument('-r','--refDir', help='Full path to directory where you have already built your methylation reference files (required)', required=True)
+    parser_callmethylation.add_argument('-d','--dir', help='Full path to directory where your \'*allMolecules.txt\' files are located (required)', required=True)
+    parser_callmethylation.add_argument('-n','--nameRun', help='number of reads needed to be counted as a unique molecule (required)', required=True)
+    parser_callmethylation.add_argument('-p','--processes', help='number of processes (default=1)', default=1, type=int)
+    parser_callmethylation.add_argument('-c','--cisCG', help='cis-CG threshold to determine if a molecule is methylated (default=0.75)', default=0.75, type=float)
+    parser_callmethylation.add_argument('-m','--moleculeThreshold', help='number of reads needed to be counted as a unique molecule (default=5)', default=5, type=int)
+    parser_callmethylation.set_defaults(func=run_subcommand)
 
 
     #######################################
