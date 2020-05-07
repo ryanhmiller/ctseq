@@ -1,0 +1,4 @@
+bismark>=0.22.3
+bowtie2>=2.3.5.1
+samtools>=1.7
+cutadapt>=2.9

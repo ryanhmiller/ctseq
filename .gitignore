@@ -2,3 +2,14 @@
 *.sh
 ._*
 .DS_Store
+meta.yaml
+testGenome/
+run*.sh
+Fastq/
+test.sh
+testGenome/
+slurm*
+
+
+
+
