@@ -1,0 +1,3 @@
+bismark>=0.22.3
+cutadapt>=2.9
+umitools>=1.0.1
