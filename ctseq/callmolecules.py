@@ -395,7 +395,7 @@ def run(args):
             #### split sam file into smaller files (n=numProcesses)
             os.chdir(samDir)
             intermedFileNames=splitSamFile(samFileName,processes)
-            gc.collect() # free up unreferenced memory
+            # gc.collect() # free up unreferenced memory
 
             ### analyze the reads from the temp .sam files for this sample in parallel
             chunksAnalyzingReads=[]
@@ -405,7 +405,6 @@ def run(args):
             analyzeReads_multipleArgs=partial(analyzeReads, myRefSeq=refSeq, myRefCGindices=refCGindices) # see 'Example 2' - http://python.omics.wiki/multiprocessing_map/multiprocessing_partial_function_multiple_arguments, this is to use 1 dynamic fxn arguments and these 2 static arguments for multiprocessing
             chunksAnalyzingReads=p.map(analyzeReads_multipleArgs, intermedFileNames)
             print("exiting pool",utilities.getDate())
-            gc.collect() # free up unreferenced memory
 
             #### merge all the locusUMIreadDicts and readDepthDicts
             for i in range(1,len(chunksAnalyzingReads),1): # we are starting at second element in list; we are appending everything into the first dictionary in this list
@@ -414,8 +413,6 @@ def run(args):
 
                 mergeReadDepthDicts(chunksAnalyzingReads[0].readDepthDict,chunksAnalyzingReads[i].readDepthDict)
                 chunksAnalyzingReads[i].readDepthDict="" # free up some RAM
-
-            gc.collect() # free up unreferenced memory
 
             # figure out how many loci to analyze in each process
             numLociPerChunk=len(refLociNames)//processes
@@ -449,8 +446,6 @@ def run(args):
 
             # clear up RAM
             del chunksAnalyzingReads
-            gc.collect() # free up unreferenced memory
-
 
             # finalResults=[]
             print("entering pool to analyze molecules for sample",sampleName,utilities.getDate())
@@ -485,5 +480,3 @@ def run(args):
             print('\n**************')
             print('Done calling molecules for',sampleName,utilities.getDate())
             print('**************\n')
-
-        gc.collect()
