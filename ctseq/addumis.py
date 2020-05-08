@@ -33,6 +33,11 @@ def run(args):
         print('Since your UMIs are in separate fastq files, please specify the unique file extension of the UMI fastq files for the \'--umiExt\' flag (e.g. R2_001.fastq OR R2_001.fastq.gz)')
         print('**EXITING**')
         sys.exit()
+    elif runType=='inline' and umiExt!='NOTSPECIFIED':
+        print('\n**ERROR**')
+        print('You specified that the UMIs are \'inline\' for the \'--type\' flag yet you also used the \'--umiExt\' flag implying you have separate file with UMIs in it. Did you mean to use \'separate\' with the \'type\' flag instead?')
+        print('**EXITING**')
+        sys.exit()
     elif runType=='separate' and umiExt!='NOTSPECIFIED':
         utilities.fileCheck(dir,umiExt)
 

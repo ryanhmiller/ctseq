@@ -47,7 +47,7 @@ def main():
     # make_methyl_ref #
     ###################
     parser_make_methyl_ref = subparsers.add_parser('make_methyl_ref', help='make the necessary reference files to use Bismark to align & call methylation')
-    parser_make_methyl_ref.add_argument('-r','--refDir', help='Full path to directory where you want to build your reference methylation genome. Must contain a reference file for your intended targets with extension (.fa)', required=True)
+    parser_make_methyl_ref.add_argument('-r','--refDir', help='Path to the directory where you want to build your reference methylation genome. Must contain a reference file for your intended targets with extension (.fa). If this flag is not used, it is assumed that your current working directory contains your reference file and also that you want to build your reference in that same location.', default='CurrDir')
     parser_make_methyl_ref.set_defaults(func=run_subcommand)
 
     ############
@@ -56,7 +56,7 @@ def main():
     parser_add_umis = subparsers.add_parser('add_umis', help='properly format and add unique molecular identifiers to your fastq files')
     parser_add_umis.add_argument('--type', choices=['separate', 'inline'], help='Choose \'separate\' if the UMIs for the reads are contained in a separate fastq file where the line after the read name is the UMI. Choose \'inline\' if the UMIs are already included in the forward/reverse read fastq files in the following format: \'@M01806:488:000000000-J36GT:1:1101:15963:1363:GTAGGTAAAGTG 1:N:0:CGAGTAAT\' where \'GTAGGTAAAGTG\' is the UMI', required=True)
     parser_add_umis.add_argument('-l','--umiLength', help='Length of UMI sequence, e.g. 12 (required)', type=int, required=True)
-    parser_add_umis.add_argument('-d','--dir', help='Full path to directory containing fastq files; forward/reverse reads and umi files (required)', required=True)
+    parser_add_umis.add_argument('-d','--dir', help='Path to directory containing fastq files; forward/reverse reads and umi files. If no \'--dir\' is specified, ctseq will look in your current directory.', default='CurrDir')
     parser_add_umis.add_argument('--forwardExt', help='Unique extension of fastq files containing FORWARD reads. Make sure to include \'.gz\' if your files are compressed (required)', required=True)
     parser_add_umis.add_argument('--reverseExt', help='Unique extension of fastq files containing REVERSE reads. Make sure to include \'.gz\' if your files are compressed (required)', required=True)
     parser_add_umis.add_argument('--umiExt', help='Unique extension of fastq files containing the UMIs (This flag is REQUIRED if UMIs are contained in separate fastq file). Make sure to include \'.gz\' if your files are compressed.', default='NOTSPECIFIED')

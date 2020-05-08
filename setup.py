@@ -1,7 +1,10 @@
+import os
 from setuptools import find_packages, setup
-from .version import __version__
 
 # find tutorial for this here: https://packaging.python.org/tutorials/packaging-projects/
+
+version_py = os.path.join(os.path.dirname(__file__), 'ctseq', 'version.py')
+version = open(version_py).read().strip().split('=')[-1].replace('"','').strip()
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -11,7 +14,7 @@ with open("requirements.txt", "r") as f:
 
 setup(
     name="ctseq",
-    version=__version__,
+    version=version,
     description="pipeline to analyze ctDNA data",
     long_description=long_description,
     long_description_content_type='text/markdown',
