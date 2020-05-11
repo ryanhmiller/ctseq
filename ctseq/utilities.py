@@ -3,18 +3,27 @@ import sys
 import os
 import glob
 import re
+from .__main__ import defaultDir
 
 def getDate():
     return(str(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
 
 def validDir(path):
-    if not os.path.isdir(path):
+    if path==defaultDir: # if no path given, return current working directory
+        return(os.getcwd())
 
+    elif os.path.isdir(path): # if path is valid, return path
+        return(path)
+
+    else: # did not provide valid path
+    #if not os.path.isdir(path):
         print('\n**ERROR**')
         print('The provided path is not a valid path. Exiting...')
         print(path)
         print('\n')
         sys.exit()
+
+
     # else:
     #     print("passdir")
 

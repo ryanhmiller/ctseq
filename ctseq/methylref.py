@@ -3,7 +3,6 @@ import sys
 import subprocess
 from . import utilities
 
-
 def run(args):
     refDir=args.refDir
 
@@ -11,7 +10,7 @@ def run(args):
     ##############################################
     # arg check - make sure this is a valid path #
     ##############################################
-    utilities.validDir(refDir)
+    refDir=utilities.validDir(refDir)
 
     #########################
     # continue with command #

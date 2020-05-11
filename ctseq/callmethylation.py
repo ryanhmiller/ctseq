@@ -142,8 +142,8 @@ def run(args):
     # arg check #
     #############
     # check that paths are valid
-    utilities.validDir(refDir)
-    utilities.validDir(fileDir)
+    refDir=utilities.validDir(refDir)
+    fileDir=utilities.validDir(fileDir)
 
     # check that refDir/fileDir actually have the necessary files in them
     utilities.fileCheck(refDir,'.fa')

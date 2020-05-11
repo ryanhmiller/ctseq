@@ -241,8 +241,8 @@ def run(args):
     # arg check #
     #############
     # check that paths are valid
-    utilities.validDir(refDir)
-    utilities.validDir(dir)
+    refDir=utilities.validDir(refDir)
+    dir=utilities.validDir(dir)
 
     # check that dir actually has fastq files in it
     utilities.fileCheck(dir,fExt)

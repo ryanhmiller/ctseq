@@ -6,7 +6,7 @@ from . import utilities
 
 def run(args):
     dir=args.dir
-    runType=args.type
+    runType=args.umiType
     umiLength=int(args.umiLength)
     forwardExt=args.forwardExt
     reverseExt=args.reverseExt
@@ -22,7 +22,7 @@ def run(args):
     print('ADDING UMIs',utilities.getDate())
     print('**************\n')
 
-    utilities.validDir(dir)
+    dir=utilities.validDir(dir)
     utilities.fileCheck(dir,forwardExt)
     utilities.fileCheck(dir,reverseExt)
 

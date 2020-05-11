@@ -355,8 +355,8 @@ def run(args):
     # arg check #
     #############
     # check that paths are valid
-    utilities.validDir(refDir)
-    utilities.validDir(samDir)
+    refDir=utilities.validDir(refDir)
+    samDir=utilities.validDir(samDir)
 
     # check that samDir/fastqDir actually has sam/reference files in them
     utilities.fileCheck(refDir,".fa")
