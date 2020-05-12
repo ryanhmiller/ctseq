@@ -10,6 +10,8 @@ test.sh
 testGenome/
 slurm*
 ctseq.egg-info/
+FastqAnalyze/
+FastqWithN/
 
 
 
