@@ -1,6 +1,6 @@
 FROM continuumio/miniconda3
 RUN conda create -n ctseqEnv python=3.7
-RUN echo "source activate myEnv" > ~/.bashrc
+RUN echo "source activate ctseqEnv" > ~/.bashrc
 
 RUN conda install -c bioconda cutadapt
 RUN conda install -c bioconda bismark
