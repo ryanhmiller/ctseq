@@ -134,16 +134,15 @@ def align(args,newForExt,newRevExt):
                         args.refDir,'-1',forwardSplitFile,'-2',reverseSplitFile]
 
             print('Aligning '+forwardSplitFile+' with Bismark '+utilities.getDate())
+            externalProcess = subprocess.Popen(bismarkCmd)
+            exitCode = externalProcess.wait()
+            error = externalProcess.stderr
 
-            os.system(' '.join(bismarkCmd))
-            # externalProcess = subprocess.Popen(bismarkCmd)
-            # exitCode = externalProcess.wait()
-            # error = externalProcess.stderr
-            #
-            # if exitCode != 0:
-            #     print('\n**ERROR**')
-            #     print('Something went wrong with Bismark. Exiting...')
-            #     sys.exit()
+            if exitCode != 0:
+                print('\n**ERROR**')
+                print('Something went wrong with Bismark. Exiting...')
+                print(error)
+                sys.exit()
 
         #####################################################
         # combine bams (if only one bam, still renames bam) #
