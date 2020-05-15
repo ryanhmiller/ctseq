@@ -212,11 +212,11 @@ def align(args,newForExt,newRevExt):
         removeFiles(glob.glob(sampleName+'_*ReadsWithUMIsTRIMMED.fastq'))
         removeFiles([sampleName+".bam"])
 
-        print('Renaming bismark report file',sampleName,utilities.getDate())
-        bismarkReportFileName=glob.glob(sampleName+'_*bismark_bt2_PE_report.txt')[0]
-        newBismarkReportFileName=sampleName+'_bismarkReport.txt'
-        renameBismarkReportCmd='mv '+bismarkReportFileName+' '+newBismarkReportFileName
-        os.system(renameBismarkReportCmd)
+        # print('Renaming bismark report file',sampleName,utilities.getDate())
+        # bismarkReportFileName=glob.glob(sampleName+'_*bismark_bt2_PE_report.txt')[0]
+        # newBismarkReportFileName=sampleName+'_bismarkReport.txt'
+        # renameBismarkReportCmd='mv '+bismarkReportFileName+' '+newBismarkReportFileName
+        # os.system(renameBismarkReportCmd)
 
         print('\nDone aligning sample '+sampleName+' '+utilities.getDate()+'\n')
 
