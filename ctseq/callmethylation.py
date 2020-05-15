@@ -126,6 +126,155 @@ def writeReport(myListOfLociDicts,reportType,myRefFrags,mySampleNames,myRunName)
             outputFile.write('\t'.join(outputLine)+'\n')
 
 
+
+class sampleStats:
+    def __init__(self):
+        self.bismarkAlignedReads=0
+        self.bismarkTotalReads=0
+
+        self.methCpG=0
+        self.unmethCpG=0
+
+        self.methCHG=0
+        self.unmethCHG=0
+
+        self.methCHH=0
+        self.unmethCHH=0
+
+        self.methUnknown=0
+        self.unmethUnknown=0
+
+def writeRunStatsReport(myListOfLociDicts,myRefFrags,mySampleNames,myRunName):
+
+    outputFileName=myRunName+'_runStatistics.txt'
+
+    # grab stats from bismark report files
+    bismarkStatsContainer={}
+    bismarkReportFiles=utilities.getFiles(path=os.getcwd(),'report.txt')
+
+    for reportFileName in bismarkReportFiles:
+       # print(reportFileName)
+       with open(reportFileName,'r') as reportFile:
+            currSample=""
+            currAlignedReads=0
+            currTotalReads=0
+
+            currMethCpG=0
+            currUnmethCpG=0
+
+            currMethCHG=0
+            currUnmethCHG=0
+
+            currMethCHH=0
+            currUnmethCHH=0
+
+            currMethUnknown=0
+            currUnmethUnknown=0
+
+            # percent=""
+            for line in reportFile:
+                line=line.strip('\n').split(':')
+                if line[0]=='Bismark report for':
+                    # currSample=line[1].split('_')[0].split(' ')[1]
+                    currSample=line[1].split(' ')[1].split('/')[-1].split('_')[0]
+                    print(currSample,'\n')
+
+                elif line[0]=='Number of paired-end alignments with a unique best hit':
+                    currAlignedReads=int(line[1].split('\t')[1])
+                elif line[0]=='Sequence pairs analysed in total':
+                    currTotalReads=int(line[1].split('\t')[1])
+
+
+                elif line[0]=="Total methylated C's in CpG context":
+                    currMethCpG=int(line[1].split('\t')[1])
+                elif line[0]=="Total unmethylated C's in CpG context":
+                    currUnmethCpG=int(line[1].split('\t')[1])
+
+
+                elif line[0]=="Total methylated C's in CHG context":
+                    currMethCHG=int(line[1].split('\t')[1])
+                elif line[0]=="Total unmethylated C's in CHG context":
+                    currUnmethCHG=int(line[1].split('\t')[1])
+
+
+                elif line[0]=="Total methylated C's in CHH context":
+                    currMethCHH=int(line[1].split('\t')[1])
+                elif line[0]=="Total unmethylated C's in CHH context":
+                    currUnmethCHH=int(line[1].split('\t')[1])
+
+
+                elif line[0]=="Total methylated C's in Unknown context":
+                    currMethUnknown=int(line[1].split('\t')[1])
+                elif line[0]=="Total unmethylated C's in Unknown context":
+                    currUnmethUnknown=int(line[1].split('\t')[1])
+
+
+                    if currSample not in bismarkStatsContainer:
+                        currObj=sampleStats()
+                        bismarkStatsContainer[currSample]=currObj
+
+                    bismarkStatsContainer[currSample].bismarkAlignedReads+=currAlignedReads
+                    bismarkStatsContainer[currSample].bismarkTotalReads+=currTotalReads
+
+                    bismarkStatsContainer[currSample].methCpG+=currMethCpG
+                    bismarkStatsContainer[currSample].unmethCpG+=currUnmethCpG
+
+                    bismarkStatsContainer[currSample].methCHG+=currMethCHG
+                    bismarkStatsContainer[currSample].unmethCHG+=currUnmethCHG
+
+                    bismarkStatsContainer[currSample].methCHH+=currMethCHH
+                    bismarkStatsContainer[currSample].unmethCHH+=currUnmethCHH
+
+                    bismarkStatsContainer[currSample].methUnknown+=currMethUnknown
+                    bismarkStatsContainer[currSample].unmethUnknown+=currUnmethUnknown
+
+
+                    currSample=""
+                    currAlignedReads=0
+                    currTotalReads=0
+
+                    currMethCpG=0
+                    currUnmethCpG=0
+
+                    currMethCHG=0
+                    currUnmethCHG=0
+
+                    currMethCHH=0
+                    currUnmethCHH=0
+
+                    currMethUnknown=0
+                    currUnmethUnknown=0
+
+
+    # iterate through myListOfLociDicts and calc # aligned reads/molecules for each sample
+    #alignedReadsMolDict={} # sampleName : [alignedReads, alignedMolecules]
+
+    # write out stats
+    with open(outputFileName, 'w') as outputFile:
+        # write header line
+        headerLine=['sample','percentAlignedReads','alignedReads','alignedMol','methCpG','methCHG','methCHH','methUnknownCNorCHN']
+        outputFile.write('\t'.join(headerLine)+'\n')
+
+        # loop through and grab aligned reads/molecules stats for each sample and then write out all stats for that sample
+        for sample in mySampleNames:
+            sampleAlignedReads=0
+            sampleAlignedMolecules=0
+
+            for frag in myRefFrags:
+                sampleAlignedReads+=myListOfLociDicts[sample][frag].totalReads
+                sampleAlignedMolecules+=myListOfLociDicts[sample][frag].totalMolecules
+
+            percentReadsAligned=str(round((bismarkStatsContainer[sample].bismarkAlignedReads/bismarkStatsContainer[sample].bismarkTotalReads)*100,1))
+            methCpG=str(round(((bismarkStatsContainer[sample].methCpG/(bismarkStatsContainer[sample].methCpG+bismarkStatsContainer[sample].unmethCpG))*100),1))
+            methCHG=str(round(((bismarkStatsContainer[sample].methCHG/(bismarkStatsContainer[sample].methCHG+bismarkStatsContainer[sample].unmethCHG))*100),1))
+            methCHH=str(round(((bismarkStatsContainer[sample].methCHH/(bismarkStatsContainer[sample].methCHH+bismarkStatsContainer[sample].unmethCHH))*100),1))
+            methUnknown=str(round(((bismarkStatsContainer[sample].methUnknown/(bismarkStatsContainer[sample].methUnknown+bismarkStatsContainer[sample].unmethUnknown))*100),1))
+
+            outputLine=[sample,percentReadsAligned,str(sampleAlignedReads),str(sampleAlignedMolecules),methCpG,methCHG,methCHH,methUnknown]
+
+            outputFile.write('\t'.join(outputLine)+'\n')
+
+
 def run(args):
     refDir=args.refDir
     fileDir=args.dir
