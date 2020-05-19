@@ -152,7 +152,10 @@ def main():
 
     # args = parser.parse_args()
 
-    if len(sys.argv) > 1:
+    if sys.argv[1]=='graph': # we can run 'graph' without any args
+        args = parser.parse_args()
+        args.func(args)
+    elif sys.argv[1]!='graph' and len(sys.argv) > 1: # can't run any other subcommands without any args
         args = parser.parse_args()
         args.func(args)
     else:

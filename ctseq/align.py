@@ -81,7 +81,7 @@ def removeFiles(listOfFiles):
         sys.exit()
 
 
-def align(args,newForExt,newRevExt):
+def align(args,myRefDir,newForExt,newRevExt):
     print('\n**************')
     print('Aligning reads with Bismark '+utilities.getDate())
     print('**************\n')
@@ -109,18 +109,23 @@ def align(args,newForExt,newRevExt):
 
         splitReverseFileCmd=['split','-l',str(linesPerFile),'-d',reverseFile,'--additional-suffix=.fastq',sampleName+'_reverse_TEMP_']
 
-        splitProcessForward = subprocess.Popen(splitForwardFileCmd)
-        forwardSplitExitCode = splitProcessForward.wait()
-        forwardSplitError = splitProcessForward.stderr
+        # splitProcessForward = subprocess.Popen(splitForwardFileCmd)
+        # forwardSplitExitCode = splitProcessForward.wait()
+        # forwardSplitError = splitProcessForward.stderr
 
-        splitProcessReverse = subprocess.Popen(splitReverseFileCmd)
-        reverseSplitExitCode = splitProcessReverse.wait()
-        reverseSplitError = splitProcessReverse.stderr
+        os.system(' '.join(splitForwardFileCmd))
 
-        if forwardSplitExitCode != 0 or reverseSplitExitCode != 0:
-            print('\n**ERROR**')
-            print('Something went wrong with splitting up files before running Bismark. Exiting...')
-            sys.exit()
+        # splitProcessReverse = subprocess.Popen(splitReverseFileCmd)
+        # reverseSplitExitCode = splitProcessReverse.wait()
+        # reverseSplitError = splitProcessReverse.stderr
+        #
+
+        os.system(' '.join(splitReverseFileCmd))
+
+        # if forwardSplitExitCode != 0 or reverseSplitExitCode != 0:
+        #     print('\n**ERROR**')
+        #     print('Something went wrong with splitting up files before running Bismark. Exiting...')
+        #     sys.exit()
 
         ################################################
         ## run split up fastqs and run through Bismark #
@@ -154,14 +159,16 @@ def align(args,newForExt,newRevExt):
         combineBamsCmd=['samtools','cat','-o',combinedBamFile]+thisSampleBams
 
         print('Combining '+sampleName+' bam files '+utilities.getDate())
-        combineBamsProcess = subprocess.Popen(combineBamsCmd)
-        combineBamsExitCode = combineBamsProcess.wait()
-        combineBamsError = combineBamsProcess.stderr
 
-        if combineBamsExitCode != 0:
-            print('\n**ERROR**')
-            print('Something went wrong combining bam files. Exiting...')
-            sys.exit()
+        os.system(' '.join(combineBamsCmd))
+        # combineBamsProcess = subprocess.Popen(combineBamsCmd)
+        # combineBamsExitCode = combineBamsProcess.wait()
+        # combineBamsError = combineBamsProcess.stderr
+        #
+        # if combineBamsExitCode != 0:
+        #     print('\n**ERROR**')
+        #     print('Something went wrong combining bam files. Exiting...')
+        #     sys.exit()
 
         ###########################
         # convert bam to sam file #
@@ -260,4 +267,4 @@ def run(args):
 
     cutAdapters(args,fExt=fExt,rExt=rExt,newForExt=newForExt,newRevExt=newRevExt)
 
-    align(args,newForExt=newForExt,newRevExt=newRevExt)
+    align(args,myRefDir=refDir,newForExt=newForExt,newRevExt=newRevExt)
