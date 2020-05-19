@@ -1,8 +1,7 @@
 import os
 import inspect
+import sys
 from . import utilities
-
-
 
 
 
@@ -18,13 +17,26 @@ def run(args):
     # check that paths are valid
     fileDir=utilities.validDir(fileDir)
 
-    # check that refDir/fileDir actually have the necessary files in them
-    utilities.fileCheck(fileDir,totalMolExt)
-    utilities.fileCheck(fileDir,fragOrderFile)
-
     # make sure file dir has '/' on end
     if fileDir[-1]!='/':
         fileDir+='/'
+
+    # check totalmolecules file
+    if os.path.isfile(fileDir+fragOrderFile) == False:
+        print('ERROR: Your --molDepthOrder order file does not exist')
+        print(fragOrderFile)
+        print('Exiting...')
+        sys.exit()
+
+    totalMolFile=getFiles(fileDir,totalMolExt)
+
+    if len(totalMolFile) > 1:
+        print('ERROR: it looks like you have more than one *'+totalMolExt+' file at '+fileDir)
+        print('Please make sure there is only one of these files at this location')
+        print('Exiting...')
+        sys.exit()
+    else:
+        totalMolFile=totalMolFile[0]
 
 
     rscriptPath = '/'.join(inspect.getfile(utilities).split('/')[:-1])
@@ -32,7 +44,6 @@ def run(args):
 
     rscriptPath+='/'+rscriptName
 
-
-    rscriptCmd=['Rscript',rscriptPath,fileDir,totalMolExt,fragOrderFile]
+    rscriptCmd=['Rscript',rscriptPath,fileDir,totalMolFile,fragOrderFile]
 
     os.system(' '.join(rscriptCmd))

@@ -2,7 +2,7 @@
 args=commandArgs(trailingOnly = TRUE)
 
 workingDir=args[1]
-totalMoleculeExtension=args[2]
+totalMoleculeFileName=args[2]
 fragOrderFileName=args[3]
 
 setwd(workingDir)
@@ -11,18 +11,12 @@ setwd(workingDir)
 library(ggplot2)
 library(reshape)
 
-moleculeFileName=list.files(pattern = paste("\\",totalMoleculeExtension,"$",sep=""))[1]
-
-moleculeFile=read.table(moleculeFileName, header = T, row.names = 1, sep = "\t")
-
 fragOrder=read.table(fragOrderFileName)
 fragOrder=as.character(fragOrder$V1)
 
+runName=strsplit(totalMoleculeFileName,split = "_")[[1]][1]
 
-moleculeFileName=list.files(pattern = paste("\\",totalMoleculeExtension,"$",sep=""))[1]
-runName=strsplit(moleculeFileName,split = "_")[[1]][1]
-
-moleculeFile=read.table(moleculeFileName, header = T, sep = "\t")
+moleculeFile=read.table(totalMoleculeFileName, header = T, sep = "\t")
 
 meltedMol=melt(moleculeFile)
 colnames(meltedMol)=c("Fragment","Sample","Molecules")
