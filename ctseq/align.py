@@ -136,7 +136,7 @@ def align(args,myRefDir,newForExt,newRevExt):
             reverseSplitFile=forwardSplitFile.replace("forward","reverse")
 
             bismarkCmd=['bismark','--bowtie2','--multicore',str(args.bismarkCores),'--ambiguous','--unmapped','--genome_folder',
-                        args.refDir,'-1',forwardSplitFile,'-2',reverseSplitFile]
+                        myRefDir,'-1',forwardSplitFile,'-2',reverseSplitFile]
 
             print('Aligning '+forwardSplitFile+' with Bismark '+utilities.getDate())
 
