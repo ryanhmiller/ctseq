@@ -142,7 +142,7 @@ def main():
     parser_plot.add_argument('--dir', help='Path to directory where you have your plot input files. If no \'--dir\' is specified, ctseq will look in your current directory.', default=defaultDir)
     parser_plot.add_argument('--molDepthOrder', help='Name of file containing order of your fragments to be displayed on the x-axis of the molecule depth plot', required=True)
 
-    parser_graph.set_defaults(func=run_subcommand)
+    parser_plot.set_defaults(func=run_subcommand)
 
 
 
