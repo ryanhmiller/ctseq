@@ -28,7 +28,7 @@ def run(args):
         print('Exiting...')
         sys.exit()
 
-    totalMolFile=getFiles(fileDir,totalMolExt)
+    totalMolFile=utilities.getFiles(fileDir,totalMolExt)
 
     if len(totalMolFile) > 1:
         print('ERROR: it looks like you have more than one *'+totalMolExt+' file at '+fileDir)
