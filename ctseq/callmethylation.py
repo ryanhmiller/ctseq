@@ -266,10 +266,10 @@ def writeRunStatsReport(myListOfLociDicts,myRefFrags,mySampleNames,myRunName):
                     sampleAlignedMolecules+=myListOfLociDicts[sample][frag].totalMolecules
 
 
-            percentReadsAligned=0
-            methCpG=0
-            methCHG=0
-            methUnknown=0
+            percentReadsAligned='0'
+            methCpG='0'
+            methCHG='0'
+            methUnknown='0'
 
             if bismarkStatsContainer[sample].bismarkTotalReads != 0:
                 percentReadsAligned=str(round((bismarkStatsContainer[sample].bismarkAlignedReads/bismarkStatsContainer[sample].bismarkTotalReads)*100,1))
