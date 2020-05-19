@@ -22,7 +22,7 @@ setup(
     author_email="miller.ryan.h@gmail.com",
     url="https://github.com/ryanhmiller/ctseq",
     packages=['ctseq'],
-    package_data={"": ["LICENSE", "README.md"]},
+    package_data={"": ["LICENSE", "README.md",'ctseq/*.R','ctseq/*.r']},
     #data_files=[("samplot", ["samplot/templates/samplot_vcf.html"])],
     #include_package_data=True,
     install_requires=requires,

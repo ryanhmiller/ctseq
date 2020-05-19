@@ -150,7 +150,7 @@ def writeRunStatsReport(myListOfLociDicts,myRefFrags,mySampleNames,myRunName):
 
     # grab stats from bismark report files
     bismarkStatsContainer={}
-    bismarkReportFiles=utilities.getFiles(path=os.getcwd(),'report.txt')
+    bismarkReportFiles=utilities.getFiles(path=os.getcwd(),fileExt='report.txt')
 
     for reportFileName in bismarkReportFiles:
        # print(reportFileName)
@@ -177,7 +177,7 @@ def writeRunStatsReport(myListOfLociDicts,myRefFrags,mySampleNames,myRunName):
                 if line[0]=='Bismark report for':
                     # currSample=line[1].split('_')[0].split(' ')[1]
                     currSample=line[1].split(' ')[1].split('/')[-1].split('_')[0]
-                    print(currSample,'\n')
+                    #print(currSample,'\n')
 
                 elif line[0]=='Number of paired-end alignments with a unique best hit':
                     currAlignedReads=int(line[1].split('\t')[1])
@@ -261,8 +261,9 @@ def writeRunStatsReport(myListOfLociDicts,myRefFrags,mySampleNames,myRunName):
             sampleAlignedMolecules=0
 
             for frag in myRefFrags:
-                sampleAlignedReads+=myListOfLociDicts[sample][frag].totalReads
-                sampleAlignedMolecules+=myListOfLociDicts[sample][frag].totalMolecules
+                if frag in myListOfLociDicts[sample]:
+                    sampleAlignedReads+=myListOfLociDicts[sample][frag].totalReads
+                    sampleAlignedMolecules+=myListOfLociDicts[sample][frag].totalMolecules
 
             percentReadsAligned=str(round((bismarkStatsContainer[sample].bismarkAlignedReads/bismarkStatsContainer[sample].bismarkTotalReads)*100,1))
             methCpG=str(round(((bismarkStatsContainer[sample].methCpG/(bismarkStatsContainer[sample].methCpG+bismarkStatsContainer[sample].unmethCpG))*100),1))
@@ -377,6 +378,8 @@ def run(args):
     writeReport(reportType='methMolecules',myListOfLociDicts=lociDictsAllSamples,myRefFrags=refFrags,mySampleNames=allSamples,myRunName=nameRun)
     writeReport(reportType='totalReads',myListOfLociDicts=lociDictsAllSamples,myRefFrags=refFrags,mySampleNames=allSamples,myRunName=nameRun)
     writeReport(reportType='methRatio',myListOfLociDicts=lociDictsAllSamples,myRefFrags=refFrags,mySampleNames=allSamples,myRunName=nameRun)
+
+    writeRunStatsReport(myListOfLociDicts=lociDictsAllSamples,myRefFrags=refFrags,mySampleNames=allSamples,myRunName=nameRun)
     print('finished writing reports for ',nameRun,utilities.getDate())
 
 

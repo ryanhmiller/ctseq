@@ -22,6 +22,9 @@ def run_subcommand(args):
     elif args.subcommand=='analyze':
         from .analyze import run
 
+    elif args.subcommand=='graph':
+        from .graph import run
+
     # run the chosen command
     run(args)
 
@@ -130,6 +133,18 @@ def main():
     parser_analyze.add_argument('--cisCG', help='cis-CG threshold to determine if a molecule is methylated (default=0.75)', default=0.75, type=float)
     parser_analyze.add_argument('--moleculeThreshold', help='number of reads needed to be counted as a unique molecule (default=5)', default=5, type=int)
     parser_analyze.set_defaults(func=run_subcommand)
+
+
+    #########
+    # graph #
+    #########
+    parser_graph = subparsers.add_parser('graph', help='graph output from ctseq')
+    parser_graph.add_argument('--dir', help='Path to directory where you have your graph input files. If no \'--dir\' is specified, ctseq will look in your current directory.', default=defaultDir)
+    parser_graph.add_argument('--molDepthOrder', help='Name of file containing order of your fragments to be displayed on the x-axis of the molecule depth plot', required=True)
+
+    parser_graph.set_defaults(func=run_subcommand)
+
+
 
     #######################################
     # parse args and call proper function #
