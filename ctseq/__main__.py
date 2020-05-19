@@ -22,8 +22,8 @@ def run_subcommand(args):
     elif args.subcommand=='analyze':
         from .analyze import run
 
-    elif args.subcommand=='graph':
-        from .graph import run
+    elif args.subcommand=='plot':
+        from .plot import run
 
     # run the chosen command
     run(args)
@@ -135,12 +135,12 @@ def main():
     parser_analyze.set_defaults(func=run_subcommand)
 
 
-    #########
-    # graph #
-    #########
-    parser_graph = subparsers.add_parser('graph', help='graph output from ctseq')
-    parser_graph.add_argument('--dir', help='Path to directory where you have your graph input files. If no \'--dir\' is specified, ctseq will look in your current directory.', default=defaultDir)
-    parser_graph.add_argument('--molDepthOrder', help='Name of file containing order of your fragments to be displayed on the x-axis of the molecule depth plot', required=True)
+    ########
+    # plot #
+    ########
+    parser_plot = subparsers.add_parser('plot', help='plot output from ctseq')
+    parser_plot.add_argument('--dir', help='Path to directory where you have your plot input files. If no \'--dir\' is specified, ctseq will look in your current directory.', default=defaultDir)
+    parser_plot.add_argument('--molDepthOrder', help='Name of file containing order of your fragments to be displayed on the x-axis of the molecule depth plot', required=True)
 
     parser_graph.set_defaults(func=run_subcommand)
 
@@ -152,10 +152,10 @@ def main():
 
     # args = parser.parse_args()
 
-    if sys.argv[1]=='graph': # we can run 'graph' without any args
+    if sys.argv[1]=='plot': # we can run 'plot' without any args
         args = parser.parse_args()
         args.func(args)
-    elif sys.argv[1]!='graph' and len(sys.argv) > 1: # can't run any other subcommands without any args
+    elif sys.argv[1]!='plot' and len(sys.argv) > 1: # can't run any other subcommands without any args
         args = parser.parse_args()
         args.func(args)
     else:

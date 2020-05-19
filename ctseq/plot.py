@@ -10,7 +10,7 @@ def run(args):
     fragOrderFile=args.molDepthOrder
 
     totalMolExt='_totalMolecules.txt'
-    rscriptName='graph.R'
+    rscriptName='plot.R'
     #############
     # arg check #
     #############

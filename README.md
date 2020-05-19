@@ -26,38 +26,17 @@ ctSeq is a pipeline to analyze methylation patch PCR data.
 
 
 ## Installation
-### Conda
-Install Conda if you do not have it already
->Conda installation [instructions](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html#install-linux-silent) (Linux). Follow instructions to install 'Miniconda'
 
-Create new environment in which to run ctSeq (recommended)
-```
-conda create --name myEnvName python=3.7
-```
+### Docker
 
-Activate Conda environment
-```
-conda activate myEnvName
-```
-
-Install ctSeq (from ```bioconda``` channel) in newly created environment
-```
-conda install -c bioconda ctseq
-```
-
-Step out of Conda environment
-```
-conda deactivate
-```
-
-Now whenever you want to run ctSeq you will just want to activate this Conda environment you just created and run your ctSeq commands
-
-### Docker (download from DockerHub - already built)
+#### Option 1: Download already-built container from DockerHub
 ```
 # download docker file
 docker pull ryanhmiller/ctseq
 ```
-### Docker (build yourself)
+or...
+
+#### Option 2: Build container yourself locally
 Get Dockerfile
 ```
 git clone https://github.com/ryanhmiller/ctseq
@@ -96,7 +75,7 @@ exit
 ```
 
 ### Singularity
-If you want to use a Docker container of ctSeq put you do not have privileges to run Docker on your system (e.g. a high performance compute environments at a university, etc) you can run the Docker container of ctSeq in Singularity
+If you want to use a Docker container of ctSeq but you do not have privileges to run Docker on your system (e.g. a high performance compute environments at a university, etc) you can run the Docker container of ctSeq in Singularity
 
 
 Download Docker image from cloud and make Singularity container for it ('.sif' file). Replace 'ctseqsingularity.sif' with whatever you want your Singularity container file to be called (with extension '.sif') and replace 'IMAGENUMBER' with the image version number (e.g. v0.0.2) you want to clone and build. You can find the latest image version numbers for ctSeq [here](https://hub.docker.com/r/ryanhmiller/ctseq/tags).
@@ -119,6 +98,34 @@ singularity exec ctseqtest.sif ctseq analyze \
 	--processes 10 \
 	--nameRun 17879R
 ```
+
+### Conda (not currently implemented)
+Install Conda if you do not have it already
+>Conda installation [instructions](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html#install-linux-silent) (Linux). Follow instructions to install 'Miniconda'
+
+Create new environment in which to run ctSeq (recommended)
+```
+conda create --name myEnvName python=3.7
+```
+
+Activate Conda environment
+```
+conda activate myEnvName
+```
+
+Install ctSeq (from ```bioconda``` channel) in newly created environment
+```
+conda install -c bioconda ctseq
+```
+
+Step out of Conda environment
+```
+conda deactivate
+```
+
+Now whenever you want to run ctSeq you will just want to activate this Conda environment you just created and run your ctSeq commands.
+
+
 ## Files needed to run pipeline
 ### Fragment reference file (required)
 Fasta file (with extension '.fa') containing the reference sequences of your desired patch PCR fragments. Please add 'AGAGAATGAGGAAGGTGGGGAGT' to the beginning of each reference sequence and 'AGTGTGGGAGGGTAGTTGGTGTT' to the end of each reference sequences. These are the adapter sequences attached to your fragments and including them in your reference sequences aids in cutting adapter and aligning your reads to the reference sequences.
@@ -135,6 +142,19 @@ AGAGAATGAGGAAGGTGGGGAGTCAGCCCCGCCTCTGCCCCAGCGCCCCCAGCCCTCCGCCCCTCCACGTTCTCACCTGC
 AGAGAATGAGGAAGGTGGGGAGTTCAGACGTTCCATTCCCAGGGTGGCGCCGCTCGGACTCCGCGTCCCAGCATTCCCCGCACGAGCCCGGGAGCACTTCCGCCCTGTTGTGAAGTGGGTGTCTCGGTGGGTGAGTCCGGGTGGCGGGGCGGGGGCAGCAGTGTGGGAGGGTAGTTGGTGTT
 ```
 
+### Molecule depth fragment order file (required if plotting results)
+This is a file listing each fragment of your panel on a separate line in the order you wish the fragments to be ordered in the graph showing the molecule depth from each sample analyzed.
+
+E.g. 'methylationPanel_v2_fragOrder.txt'
+```
+chr7_27135538_27135700-cg00288327_cg03700462
+chr2_96990992_96991127-cg11270393
+chr2_220300022_220300129-cg13437337
+chr1_205399892_205399950-cg06849719
+chr8_104383627_104383781-cg20447655_cg11889769
+chr16_23193808_23193946-cg08681432
+chr2_27938289_27938451-cg03383158
+```
 ### Fastq files (required)
 Files containing your methylation patch PCR sequencing data. Uncompressed (.fastq) or compressed (.fastq.gz) data files are acceptable
 
@@ -150,9 +170,9 @@ Command: ```make_methyl_ref```
 Options:
 ```
 -h, --help		command help
---refDir 		(optional) Path to directory where you want to build
+--refDir 		(optional) Path to directory where you want to build 		
 			your methylation reference files. Directory must contain
-			a reference '.fa' file containing the reference
+			a reference '.fa' file containing the reference 		
 			sequences of your fragments.
 ```
 Example usage:
@@ -211,7 +231,7 @@ Example usage:
 ```
 ctseq analyze \
 	--refDir /users/ryan/data/ref/breastCancerPanel \
-	--dir  ~/ryan/data/methylationData/17879R \
+	--dir  /users/ryan/data/methylationData/17879R \
 	--umiType separate \
 	--umiLength 12 \
 	--forwardExt R1_001.fastq.gz \
@@ -223,17 +243,29 @@ ctseq analyze \
 	--nameRun 17879R
 ```
 
-### *Advanced usage for ```analyze```
-
-```ctseq analyze``` performs many different actions which can actually be run individually if wanted. More information on this will be included at the bottom of this README
-
-### Step 3: Graph results
+### Step 3: Plot results
 This command will generate several graphs to summarize the methylation of data analyzed
 
 Command:
 ```
-ctseq graph
+ctseq plot
 ```
 
 Usage:
 ```
+--molDepthOrder		Name of file containing name of each fragment on a new line in the order you wish your fragments to be arranged in the molecule depth plot.
+--dir				(optional) Path to directory where you have the output files after running 'analyze' that will be used to create the plots.
+```
+
+Example usage:
+```
+ctseq plot \
+	--dir /users/ryan/data/methylationData/17879R \
+	--molDepthOrder methylationPanel_v2_fragOrder.txt
+```
+
+### *Advanced usage for ```analyze``` (under construction...)
+
+```ctseq analyze``` performs many different actions which can actually be run individually if wanted...
+
+Under construction...

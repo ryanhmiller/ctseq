@@ -301,7 +301,7 @@ def run(args):
     fileExt='_allMolecules.txt'
     tempFileBase='_allMolecules_TEMP_'
 
-    blacklistUMI=''
+    blacklistUMI='CGTCTTAGAGAA'
 
     #############
     # arg check #
