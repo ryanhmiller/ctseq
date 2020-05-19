@@ -52,7 +52,7 @@ Build Docker container (substitute ```ctseqdocker``` out for your desired Docker
 docker build -t ctseqdocker .
 ```
 
-### Run Docker container
+#### Run Docker container
 Run container
 ```
 docker run -it ctseqdocker
