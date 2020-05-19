@@ -265,11 +265,26 @@ def writeRunStatsReport(myListOfLociDicts,myRefFrags,mySampleNames,myRunName):
                     sampleAlignedReads+=myListOfLociDicts[sample][frag].totalReads
                     sampleAlignedMolecules+=myListOfLociDicts[sample][frag].totalMolecules
 
-            percentReadsAligned=str(round((bismarkStatsContainer[sample].bismarkAlignedReads/bismarkStatsContainer[sample].bismarkTotalReads)*100,1))
-            methCpG=str(round(((bismarkStatsContainer[sample].methCpG/(bismarkStatsContainer[sample].methCpG+bismarkStatsContainer[sample].unmethCpG))*100),1))
-            methCHG=str(round(((bismarkStatsContainer[sample].methCHG/(bismarkStatsContainer[sample].methCHG+bismarkStatsContainer[sample].unmethCHG))*100),1))
-            methCHH=str(round(((bismarkStatsContainer[sample].methCHH/(bismarkStatsContainer[sample].methCHH+bismarkStatsContainer[sample].unmethCHH))*100),1))
-            methUnknown=str(round(((bismarkStatsContainer[sample].methUnknown/(bismarkStatsContainer[sample].methUnknown+bismarkStatsContainer[sample].unmethUnknown))*100),1))
+
+            percentReadsAligned=0
+            methCpG=0
+            methCHG=0
+            methUnknown=0
+
+            if bismarkStatsContainer[sample].bismarkTotalReads != 0:
+                percentReadsAligned=str(round((bismarkStatsContainer[sample].bismarkAlignedReads/bismarkStatsContainer[sample].bismarkTotalReads)*100,1))
+
+            if bismarkStatsContainer[sample].methCpG !=0 or bismarkStatsContainer[sample].unmethCpG !=0:
+                methCpG=str(round(((bismarkStatsContainer[sample].methCpG/(bismarkStatsContainer[sample].methCpG+bismarkStatsContainer[sample].unmethCpG))*100),1))
+
+            if bismarkStatsContainer[sample].methCHG != 0 or bismarkStatsContainer[sample].unmethCHG != 0:
+                methCHG=str(round(((bismarkStatsContainer[sample].methCHG/(bismarkStatsContainer[sample].methCHG+bismarkStatsContainer[sample].unmethCHG))*100),1))
+
+            if bismarkStatsContainer[sample].methCHH != 0 or bismarkStatsContainer[sample].unmethCHH != 0:
+                methCHH=str(round(((bismarkStatsContainer[sample].methCHH/(bismarkStatsContainer[sample].methCHH+bismarkStatsContainer[sample].unmethCHH))*100),1))
+
+            if bismarkStatsContainer[sample].methUnknown != 0 or bismarkStatsContainer[sample].unmethUnknown != 0:
+                methUnknown=str(round(((bismarkStatsContainer[sample].methUnknown/(bismarkStatsContainer[sample].methUnknown+bismarkStatsContainer[sample].unmethUnknown))*100),1))
 
             outputLine=[sample,percentReadsAligned,str(sampleAlignedReads),str(sampleAlignedMolecules),methCpG,methCHG,methCHH,methUnknown]
 

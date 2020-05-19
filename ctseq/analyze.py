@@ -8,7 +8,7 @@ from . import callmethylation
 def run(args):
 
     # make methylation reference
-    methylref.run(args)
+    # methylref.run(args)
 
     # add umis
     addumis.run(args)
