@@ -34,10 +34,10 @@ ctSeq is a pipeline to analyze methylation patch PCR data.
 ### Docker
 
 #### Option 1: Download already-built container from DockerHub
-Replace 'VERSION' with the version of ctSeq (e.g. v0.0.2) you want to clone and build. The latest version number is found at the top of this README (a list of all the versions you can download are listed [here](https://hub.docker.com/r/ryanhmiller/ctseq/tags)).
+Replace 'v0.0.1' with the version of ctSeq you want to clone and build. The latest version number is found at the top of this README (a list of all the versions you can download are listed [here](https://hub.docker.com/r/ryanhmiller/ctseq/tags)).
 ```
 # download docker file
-docker pull ryanhmiller/ctseq:VERSION
+docker pull ryanhmiller/ctseq:v0.0.1
 ```
 or...
 
@@ -60,13 +60,21 @@ docker build -t ctseqdocker .
 #### Run Docker container
 Run container
 ```
+# Command to run container if you built the docker container yourself. Use the container name you specified in place of 'ctseqdocker'
 docker run -it ctseqdocker
+
+# Command to run if you pulled the Docker container from DockerHub, using the correct version number in place of 'v0.0.1'
+docker run -it -v /users/ryan/data/methylationData/17879R/:/myOutputDir ryanhmiller/ctseq:v0.0.1
 ```
 
 
 Run Docker container interactively with access to an outside directory.
 ```
+# Command if you built the container yourself. Substitute correct container name in place of 'ctseqdocker'
 docker run -it -v /users/ryan/data/methylationData/17879R/:/myOutputDir ctseqdocker
+
+# Command if you pulled container from DockerHub. Substitute correct version number in place of 'v0.0.1'
+docker run -it -v /users/ryan/data/methylationData/17879R/:/myOutputDir ryanhmiller/ctseq:v0.0.1
 ```
 '/users/ryan/data/methylationData/17879R/' represents the directory you want visible to your Docker container and it will be visible as '/myOutputDir' when you are in the container. You are more than welcome to put your fastq and reference (.fa) files in the same directory so you only have to mount one directory to your Docker container
 
@@ -83,9 +91,9 @@ exit
 If you want to use a Docker container of ctSeq but you do not have privileges to run Docker on your system (e.g. a high performance compute environments at a university, etc) you can run the Docker container of ctSeq in Singularity
 
 
-Download Docker image from cloud and make Singularity container for it ('.sif' file). Replace 'ctseqsingularity.sif' with whatever you want your Singularity container file to be called (with extension '.sif') and replace 'VERSION' with the version of ctSeq (e.g. v0.0.2) you want to clone and build. The latest version number is found at the top of this README (a list of all the versions you can download are listed [here](https://hub.docker.com/r/ryanhmiller/ctseq/tags)).
+Download Docker image from cloud and make Singularity container for it ('.sif' file). Replace 'ctseqsingularity.sif' with whatever you want your Singularity container file to be called (with extension '.sif') and replace 'v0.0.1' with the version of ctSeq you want to clone and build. The latest version number is found at the top of this README (a list of all the versions you can download are listed [here](https://hub.docker.com/r/ryanhmiller/ctseq/tags)).
 ```
-singularity build ctseqsingularity.sif docker://ryanhmiller/ctseq:VERSION
+singularity build ctseqsingularity.sif docker://ryanhmiller/ctseq:v0.0.1
 ```
 
 Run ctSeq in Singularity. Your whole file system will be visible to Singularity so you won't need to mount any directories, etc.
@@ -132,7 +140,7 @@ Now whenever you want to run ctSeq you will just want to activate this Conda env
 
 
 ## Files needed to run pipeline
-### 1.) Fragment reference file (required)
+### 1) Fragment reference file (required)
 Fasta file (with extension '.fa') containing the reference sequences of your desired patch PCR fragments. Please add 'AGAGAATGAGGAAGGTGGGGAGT' to the beginning of each reference sequence and 'AGTGTGGGAGGGTAGTTGGTGTT' to the end of each reference sequences. These are the adapter sequences attached to your fragments and including them in your reference sequences aids in cutting adapter and aligning your reads to the reference sequences.
 
 Example contents of reference file (```breastCancerPanelReference.fa```)
