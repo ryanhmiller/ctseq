@@ -1,6 +1,10 @@
 # ctSeq
 ctSeq is a pipeline to analyze methylation patch PCR data.
 
+### Current version:
+
+ - v0.0.1
+
 ### Requirements
 
  - Python >= 3.7
@@ -30,9 +34,10 @@ ctSeq is a pipeline to analyze methylation patch PCR data.
 ### Docker
 
 #### Option 1: Download already-built container from DockerHub
+Replace 'VERSION' with the version of ctSeq (e.g. v0.0.2) you want to clone and build. The latest version number is found at the top of this README (a list of all the versions you can download are listed [here](https://hub.docker.com/r/ryanhmiller/ctseq/tags)).
 ```
 # download docker file
-docker pull ryanhmiller/ctseq
+docker pull ryanhmiller/ctseq:VERSION
 ```
 or...
 
@@ -78,9 +83,9 @@ exit
 If you want to use a Docker container of ctSeq but you do not have privileges to run Docker on your system (e.g. a high performance compute environments at a university, etc) you can run the Docker container of ctSeq in Singularity
 
 
-Download Docker image from cloud and make Singularity container for it ('.sif' file). Replace 'ctseqsingularity.sif' with whatever you want your Singularity container file to be called (with extension '.sif') and replace 'IMAGENUMBER' with the image version number (e.g. v0.0.2) you want to clone and build. You can find the latest image version numbers for ctSeq [here](https://hub.docker.com/r/ryanhmiller/ctseq/tags).
+Download Docker image from cloud and make Singularity container for it ('.sif' file). Replace 'ctseqsingularity.sif' with whatever you want your Singularity container file to be called (with extension '.sif') and replace 'VERSION' with the version of ctSeq (e.g. v0.0.2) you want to clone and build. The latest version number is found at the top of this README (a list of all the versions you can download are listed [here](https://hub.docker.com/r/ryanhmiller/ctseq/tags)).
 ```
-singularity build ctseqsingularity.sif docker://ryanhmiller/ctseq:IMAGENUMBER
+singularity build ctseqsingularity.sif docker://ryanhmiller/ctseq:VERSION
 ```
 
 Run ctSeq in Singularity. Your whole file system will be visible to Singularity so you won't need to mount any directories, etc.
