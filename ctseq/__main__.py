@@ -140,7 +140,11 @@ def main():
     ########
     parser_plot = subparsers.add_parser('plot', help='plot output from ctseq')
     parser_plot.add_argument('--dir', help='Path to directory where you have your plot input files. If no \'--dir\' is specified, ctseq will look in your current directory.', default=defaultDir)
-    parser_plot.add_argument('--molDepthOrder', help='Name of file containing order of your fragments to be displayed on the x-axis of the molecule depth plot', required=True)
+    parser_plot.add_argument('--fragInfo', help='Name of file containing your fragment info file for this sequencing run. If not in same directory as your plot input files, please designate full path to the \'fragInfo\' file. See documentation for more info (required)', required=True)
+    parser_plot.add_argument('--multiple', help='This means you want to plot the data together from more than one directory. Please include the name of the file containing all the paths containing the data you which plot. Please put each path on a separate line',default="SINGLE")
+
+
+
 
     parser_plot.set_defaults(func=run_subcommand)
 
@@ -152,10 +156,10 @@ def main():
 
     # args = parser.parse_args()
 
-    if sys.argv[1]=='plot': # we can run 'plot' without any args
+    if len(sys.argv) > 1 and sys.argv[1]=='plot': # we can run 'plot' without any args
         args = parser.parse_args()
         args.func(args)
-    elif sys.argv[1]!='plot' and len(sys.argv) > 1: # can't run any other subcommands without any args
+    elif len(sys.argv) > 1 and sys.argv[1]!='plot': # can't run any other subcommands without any args
         args = parser.parse_args()
         args.func(args)
     else:
