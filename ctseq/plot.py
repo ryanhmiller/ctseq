@@ -22,7 +22,9 @@ def run(args):
     runStatsExt='_runStatistics.txt'
     sampleInfoExt='_sampleInfo.txt'
 
-    rscriptPlotName='plot.R'
+    rscriptPlotSingleFileName='plotSingle.R'
+    rHelperFxnsFileName='rFunctions.R'
+
     #############
     # arg check #
     #############
@@ -56,11 +58,11 @@ def run(args):
 
     runName=totalMolFile.split('_')[0]
 
-    rscriptPath = '/'.join(inspect.getfile(utilities).split('/')[:-1])
+    rscriptsPath = '/'.join(inspect.getfile(utilities).split('/')[:-1])
     # path = os.path.abspath(__file__)
 
-    rscriptPath+='/'+rscriptPlotName
-
+    rscriptPlotSinglePath=rscriptsPath+'/'+rscriptPlotSingleFileName
+    rHelperScriptPath=rscriptsPath+'/'+rHelperFxnsFileName
 
     sampleInfoFile=utilities.getFiles(fileDir,sampleInfoExt)
 
@@ -73,6 +75,6 @@ def run(args):
         print('Exiting...')
         sys.exit()
 
-    rscriptCmd=['Rscript',rscriptPath,fileDir,runName,totalMolFile,methMolFile,methRatioFile,runStatsFile,fragInfoFile,sampleInfoFile]
+    rscriptCmd=['Rscript',rscriptPlotSinglePath,rHelperScriptPath,fileDir,runName,totalMolFile,methMolFile,methRatioFile,runStatsFile,fragInfoFile,sampleInfoFile]
 
     os.system(' '.join(rscriptCmd))
