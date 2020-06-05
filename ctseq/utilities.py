@@ -48,6 +48,18 @@ def getFiles(path,fileExt):
 
     return(naturalSort(myFiles))
 
+def checkInputFileIsUnique(fileList,fileExt,myoutputDir):
+    if len(fileList) > 1:
+        print('ERROR: it looks like you have more than one *'+fileExt+' file at '+myoutputDir)
+        print('Please make sure there is only one of these files at this location')
+        print('Exiting...')
+        sys.exit()
+    elif len(fileList)==0:
+        print('ERROR: it looks like you are missing your *'+fileExt+' file at '+myoutputDir)
+        print('Exiting...')
+        sys.exit()
+    else:
+        return(fileList[0])
 
 def naturalSort(mylist):
     #got code from https://stackoverflow.com/questions/4836710/does-python-have-a-built-in-function-for-string-natural-sort

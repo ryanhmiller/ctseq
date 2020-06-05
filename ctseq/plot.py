@@ -3,14 +3,14 @@ import inspect
 import sys
 from . import utilities
 
-def checkInputIsUnique(fileList,fileExt,myFileDir):
-    if len(fileList) > 1:
-        print('ERROR: it looks like you have more than one *'+fileExt+' file at '+myFileDir)
-        print('Please make sure there is only one of these files at this location')
-        print('Exiting...')
-        sys.exit()
-    else:
-        return(fileList[0])
+# def utilities.checkInputFileIsUnique(fileList,fileExt,myFileDir):
+#     if len(fileList) > 1:
+#         print('ERROR: it looks like you have more than one *'+fileExt+' file at '+myFileDir)
+#         print('Please make sure there is only one of these files at this location')
+#         print('Exiting...')
+#         sys.exit()
+#     else:
+#         return(fileList[0])
 
 def run(args):
     fileDir=args.dir
@@ -22,7 +22,7 @@ def run(args):
     runStatsExt='_runStatistics.txt'
     sampleInfoExt='_sampleInfo.txt'
 
-    rscriptPlotSingleFileName='plotSingle.R'
+    rscriptPlotSingleFileName='plot.R'
     rHelperFxnsFileName='rFunctions.R'
 
     #############
@@ -45,16 +45,16 @@ def run(args):
         sys.exit()
 
     totalMolFile=utilities.getFiles(fileDir,totalMolExt)
-    totalMolFile=checkInputIsUnique(totalMolFile,totalMolExt,fileDir)
+    totalMolFile=utilities.checkInputFileIsUnique(totalMolFile,totalMolExt,fileDir)
 
     methMolFile=utilities.getFiles(fileDir,methMolExt)
-    methMolFile=checkInputIsUnique(methMolFile,methMolExt,fileDir)
+    methMolFile=utilities.checkInputFileIsUnique(methMolFile,methMolExt,fileDir)
 
     methRatioFile=utilities.getFiles(fileDir,methRatioExt)
-    methRatioFile=checkInputIsUnique(methRatioFile,methRatioExt,fileDir)
+    methRatioFile=utilities.checkInputFileIsUnique(methRatioFile,methRatioExt,fileDir)
 
     runStatsFile=utilities.getFiles(fileDir,runStatsExt)
-    runStatsFile=checkInputIsUnique(runStatsFile,runStatsExt,fileDir)
+    runStatsFile=utilities.checkInputFileIsUnique(runStatsFile,runStatsExt,fileDir)
 
     runName=totalMolFile.split('_')[0]
 
