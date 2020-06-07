@@ -25,6 +25,9 @@ def run_subcommand(args):
     elif args.subcommand=='plot':
         from .plot import run
 
+    elif args.subcommand=='plot_multiple':
+        from .plotmultiple import run
+
     # run the chosen command
     run(args)
 
@@ -140,11 +143,19 @@ def main():
     ########
     parser_plot = subparsers.add_parser('plot', help='plot output from ctseq')
     parser_plot.add_argument('--dir', help='Path to directory where you have your plot input files. If no \'--dir\' is specified, ctseq will look in your current directory.', default=defaultDir)
-    parser_plot.add_argument('--molDepthOrder', help='Name of file containing order of your fragments to be displayed on the x-axis of the molecule depth plot', required=True)
+    parser_plot.add_argument('--fragInfo', help='Name of file containing your fragment info file for this sequencing run. If not in same directory as your plot input files, please designate full path to the \'fragInfo\' file. See documentation for more info (required)', required=True)
 
     parser_plot.set_defaults(func=run_subcommand)
 
+    #################
+    # plot multiple #
+    #################
+    parser_plotmultiple = subparsers.add_parser('plot_multiple', help='plot output from multiple sequencing runs together')
+    parser_plotmultiple.add_argument('--dir', help='Path to directory where you want your plots to be created. If no path is given, ctseq will create the plots in your current working directory. Remember to include a file ending in \'_directories.txt\' containing the paths of the directories containing the data you want to plot', default=defaultDir)
+    parser_plotmultiple.add_argument('--fragInfo', help='Name of file containing your fragment info file for these combined plots. If not in same directory as your current working directory, please designate full path to the \'fragInfo\' file. See documentation for more info (required)', required=True)
+    parser_plotmultiple.add_argument('--name', help='Desired name to be used as the prefix for the file names of these plots (required)', required=True)
 
+    parser_plotmultiple.set_defaults(func=run_subcommand)
 
     #######################################
     # parse args and call proper function #
@@ -152,10 +163,10 @@ def main():
 
     # args = parser.parse_args()
 
-    if sys.argv[1]=='plot': # we can run 'plot' without any args
+    if len(sys.argv) > 1 and sys.argv[1]=='plot': # we can run 'plot' without any args
         args = parser.parse_args()
         args.func(args)
-    elif sys.argv[1]!='plot' and len(sys.argv) > 1: # can't run any other subcommands without any args
+    elif len(sys.argv) > 1 and sys.argv[1]!='plot': # can't run any other subcommands without any args
         args = parser.parse_args()
         args.func(args)
     else:

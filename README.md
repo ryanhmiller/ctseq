@@ -2,8 +2,7 @@
 ctSeq is a pipeline to analyze methylation patch PCR data.
 
 ### Current version:
-
- - v0.0.1
+ - v0.0.2
 
 ### Requirements
 
@@ -158,18 +157,20 @@ AGAGAATGAGGAAGGTGGGGAGTTCAGACGTTCCATTCCCAGGGTGGCGCCGCTCGGACTCCGCGTCCCAGCATTCCCCG
 ### 2) Fastq files (required)
 Files containing your methylation patch PCR sequencing data. Uncompressed (.fastq) or compressed (.fastq.gz) data files are acceptable
 
+<<<<<<< HEAD
 ### 3) Molecule depth fragment order file (required if plotting results)
 This is a file listing each fragment of your panel on a separate line in the order you wish the fragments to be ordered in the graph showing the molecule depth from each sample analyzed.
+=======
+### 3) Fragment info file (required if plotting results)
+This file will contain the row annotation information for your fragments when making heatmaps. The two necessary columns are the first column which should be the name of the fragments and another column called fragOrder showing the order you wish the fragments to be in when you make the molecule depth plot.
+>>>>>>> dev-branch
 
-E.g. 'methylationPanel_v2_fragOrder.txt'
+testFragInfo.txt
 ```
-chr7_27135538_27135700-cg00288327_cg03700462
-chr2_96990992_96991127-cg11270393
-chr2_220300022_220300129-cg13437337
-chr1_205399892_205399950-cg06849719
-chr8_104383627_104383781-cg20447655_cg11889769
-chr16_23193808_23193946-cg08681432
-chr2_27938289_27938451-cg03383158
+Fragment	length	totalCGs	GCcontent	freeEnergy	fragOrder
+chr19_15342654_15342820-cg03562044	166	15	0.686746987951807	-63.5	39
+chr6_26044142_26044281-cg15387132_cg07701237_cg26426142	139	8	0.460431654676259	-30.5	166
+chr6_26044281_26044387-cg02221866	106	8	0.537735849056604	-31.5	136
 ```
 
 
@@ -267,16 +268,81 @@ ctseq plot
 
 Usage:
 ```
---molDepthOrder		Name of file containing name of each fragment on a new line in the order you wish your fragments to be arranged in the molecule depth plot.
---dir				(optional) Path to directory where you have the output files after running 'analyze' that will be used to create the plots.
+--dir		(optional) Path to directory where you have your plot input files. If no '--dir' is specified, ctseq will look in your current directory
+--fragInfo	(required) Name of file containing your fragment info for this sequencing run. If not in same directory as your plot input files, please designate full path to the 'fragInfo' file.
 ```
 
 Example usage:
 ```
 ctseq plot \
+<<<<<<< HEAD
 	--molDepthOrder methylationPanel_v2_fragOrder.txt \
 	--dir /users/ryan/data/methylationData/17879R
+=======
+	--dir /users/ryan/data/methylationData/17879R \
+	--fragInfo testFragInfo.txt
 ```
+
+#### Fragment info file
+This tab-delimited file will contain the row annotation information for your fragments when making heatmaps. The two necessary columns are the first column with the fragment names and another column called ```fragOrder``` showing the order you wish the fragments to be in when you make the molecule depth plot.
+
+testFragInfo.txt
+```
+Fragment	length	totalCGs	GCcontent	freeEnergy	fragOrder
+chr19_15342654_15342820-cg03562044	166	15	0.686746987951807	-63.5	39
+chr6_26044142_26044281-cg15387132_cg07701237_cg26426142	139	8	0.460431654676259	-30.5	166
+chr6_26044281_26044387-cg02221866	106	8	0.537735849056604	-31.5	136
+>>>>>>> dev-branch
+```
+
+#### Sample info file (optional)
+When plotting, you can also make use of the sample info file. This is a tab-delimited file containing any extra information about each sample you want to be shown on your plots. Make sure your sample info file name ends in ```_sampleInfo.txt``` and is located in the same directory as your output files from ctseq.
+
+test_sampleInfo.txt
+```
+sample	info
+17879X1	1%_titration
+17879X2	0.75%_titration
+17879X3	0.50%_titration
+17879X4	0.25%_titration
+17879X5	0.01%_titration
+17879X6	0.00%_titration
+```
+
+
+### plot_multiple: Plot data together from more than one sequencing run
+This command combines the data from multiple sequencing runs (located in separate directories) and plots the data together.
+
+Command:
+```
+ctseq plot_multiple
+```
+
+Usage:
+```
+--dir		(optional) Path to directory where you want your plots to be created. If no '--dir' is given, ctseq will create the plots in your current working directory. Remember to include a file ending in '_directories.txt\ containing the paths of the directories containing the data you want to plot'
+--fragInfo	(required) Name of file containing your fragment info for this sequencing run. If not in same directory as '--dir', please designate full path to the 'fragInfo' file.
+--name		(required) Desired name to be used as the prefix for the file names of these plots
+```
+
+#### Directories file:
+To plot data from multiple sequencing runs, you will need a file containing the paths of each directory containing data you want to plot. Each path must be on a separate line and the file name must end in ```_directories.txt```. This file must be located at the directory indicated by ```--dir``` (or the current working directory if no ```--dir``` is specified)
+
+example_directories.txt
+```
+/users/ryan/data/methylationData/17879R
+/users/ryan/data/methylationData/17880R
+/users/ryan/data/methylationData/17883R
+/users/ryan/data/methylationData/17885R
+```
+Example usage:
+```
+ctseq plot_multiple \
+	--dir /users/ryan/data/methylationData/17879R \
+	--fragInfo testFragInfo.txt \
+	--name TitrationReplicates
+```
+
 
 ### *Advanced usage for ```analyze``` (under construction...)
 
