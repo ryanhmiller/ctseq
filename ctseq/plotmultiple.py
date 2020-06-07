@@ -13,7 +13,7 @@ def checkFile(filePath,fileType):
 
 
 def run(args):
-    outputDir=args.outputDir
+    fileDir=args.fileDir
     fragInfoFile=args.fragInfo
     runName=args.name
 
@@ -31,20 +31,20 @@ def run(args):
     # arg check #
     #############
     # check that paths are valid
-    outputDir=utilities.validDir(outputDir)
+    fileDir=utilities.validDir(fileDir)
 
-    os.chdir(outputDir)
+    os.chdir(fileDir)
 
     # make sure file dir has '/' on end
-    if outputDir[-1]!='/':
-        outputDir+='/'
+    if fileDir[-1]!='/':
+        fileDir+='/'
 
     # check fragInfo file
     checkFile(fragInfoFile,'fragInfo')
 
     # check directories file
-    directoriesFileName=utilities.getFiles(outputDir,directoriesFileExt)
-    directoriesFileName=utilities.checkInputFileIsUnique(directoriesFileName,directoriesFileExt,outputDir)
+    directoriesFileName=utilities.getFiles(fileDir,directoriesFileExt)
+    directoriesFileName=utilities.checkInputFileIsUnique(directoriesFileName,directoriesFileExt,fileDir)
 
     # loop through paths in dir and check make sure necessary files are present
     with open(directoriesFileName,'r') as dirFile:
@@ -71,6 +71,6 @@ def run(args):
     rscriptPlotMultiplePath=rscriptsPath+'/'+rscriptPlotMultipleFileName
     rHelperScriptPath=rscriptsPath+'/'+rHelperFxnsFileName
 
-    rscriptCmd=['Rscript',rscriptPlotMultiplePath,runName,totalMolExt,runStatsExt,methRatioExt,methMolExt,sampleInfoExt,fragInfoFile,outputDir,directoriesFileName,rHelperScriptPath]
+    rscriptCmd=['Rscript',rscriptPlotMultiplePath,runName,totalMolExt,runStatsExt,methRatioExt,methMolExt,sampleInfoExt,fragInfoFile,fileDir,directoriesFileName,rHelperScriptPath]
 
     os.system(' '.join(rscriptCmd))

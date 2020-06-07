@@ -153,7 +153,7 @@ plotData=function(runName,fragInfoFileName,sampleStats,totalMolFile,methMolFile,
   totalMolPlotName=paste(runName,"_totalMoleculesPlot.pdf",sep="")
   
   moleculePlot=ggplot(meltedMol, aes(x=factor(Fragment), y=Molecules, fill=factor(Sample))) +
-    ggtitle(paste(runName,"unique molecules")) +
+    ggtitle(paste(runName,"Unique Molecules")) +
     xlab("Fragment") +
     scale_fill_discrete(name = "Sample") +
     geom_dotplot(binaxis = "y", dotsize=0.4) +
@@ -182,7 +182,7 @@ plotData=function(runName,fragInfoFileName,sampleStats,totalMolFile,methMolFile,
   totalMolHeatmapName=paste(runName,"_totalMoleculesHeatmap.pdf",sep = "")
   
   pdf(totalMolHeatmapName)
-  pheatmap(log2(totalMolFile[fragOrder_heatmaps,]+1), main="Aligned Molecules (log2)",  fontsize_row=rowFontSize, fontsize_col=colFontSize, fontsize = fontSize,
+  pheatmap(log2(totalMolFile[fragOrder_heatmaps,]+1), main=paste(runName,"Aligned Molecules (log2)"),  fontsize_row=rowFontSize, fontsize_col=colFontSize, fontsize = fontSize,
            show_rownames = T, cluster_cols=F, cluster_rows=F, color=colorRampPalette(c("navy","yellow","forestgreen","darkgreen"))(50),
            annotation_col = sampleStats, annotation_row = fragInfo, na_col = "snow4", annotation_colors = my_ann_colors)
   dev.off()
@@ -193,7 +193,7 @@ plotData=function(runName,fragInfoFileName,sampleStats,totalMolFile,methMolFile,
   methMolHeatmapName=paste(runName,"_methylatedMoleculesHeatmap.pdf",sep = "")
   
   pdf(methMolHeatmapName)
-  pheatmap(log2(methMolFile[fragOrder_heatmaps,]+1), main="Methylated Molecules, (log2)", fontsize_row=rowFontSize, fontsize_col=colFontSize, fontsize = fontSize,
+  pheatmap(log2(methMolFile[fragOrder_heatmaps,]+1), main=paste(runName,"Methylated Molecules"), fontsize_row=rowFontSize, fontsize_col=colFontSize, fontsize = fontSize,
            show_rownames = T, cluster_cols=F, cluster_rows=F, color=colorRampPalette(c("navy","white","firebrick3","firebrick4"))(50),
            annotation_col = sampleStats, annotation_row = fragInfo, na_col = "snow4", annotation_colors = my_ann_colors)
   dev.off()
@@ -205,7 +205,7 @@ plotData=function(runName,fragInfoFileName,sampleStats,totalMolFile,methMolFile,
   methRatioHeatmapName=paste(runName,"_methylationRatioHeatmap.pdf",sep = "")
   
   pdf(methRatioHeatmapName)
-  pheatmap(methRatioFile[fragOrder_heatmaps,], main="Methylation Ratio", fontsize_row=rowFontSize, fontsize_col=colFontSize, fontsize = fontSize,
+  pheatmap(methRatioFile[fragOrder_heatmaps,], main=paste(runName,"Methylation Ratio"), fontsize_row=rowFontSize, fontsize_col=colFontSize, fontsize = fontSize,
            show_rownames = T, cluster_cols=F, cluster_rows=F, color=colorRampPalette(c("navy","white","sienna1","sienna2","sienna3","sienna","sienna4"))(50),
            annotation_col = sampleStats, annotation_row = fragInfo, na_col = "snow4", annotation_colors = my_ann_colors)
   dev.off()

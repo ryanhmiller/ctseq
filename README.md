@@ -1,6 +1,10 @@
 # ctSeq
 ctSeq is a pipeline to analyze methylation patch PCR data.
 
+### Current version:
+
+ - v0.0.2
+
 ### Requirements
 
  - Python >= 3.7
@@ -30,9 +34,10 @@ ctSeq is a pipeline to analyze methylation patch PCR data.
 ### Docker
 
 #### Option 1: Download already-built container from DockerHub
+Replace 'v0.0.1' with the version of ctSeq you want to clone and build. The latest version number is found at the top of this README (a list of all the versions you can download are listed [here](https://hub.docker.com/r/ryanhmiller/ctseq/tags)).
 ```
 # download docker file
-docker pull ryanhmiller/ctseq
+docker pull ryanhmiller/ctseq:v0.0.1
 ```
 or...
 
@@ -55,13 +60,21 @@ docker build -t ctseqdocker .
 #### Run Docker container
 Run container
 ```
+# Command to run container if you built the docker container yourself. Use the container name you specified in place of 'ctseqdocker'
 docker run -it ctseqdocker
+
+# Command to run if you pulled the Docker container from DockerHub, using the correct version number in place of 'v0.0.1'
+docker run -it -v /users/ryan/data/methylationData/17879R/:/myOutputDir ryanhmiller/ctseq:v0.0.1
 ```
 
 
 Run Docker container interactively with access to an outside directory.
 ```
+# Command if you built the container yourself. Substitute correct container name in place of 'ctseqdocker'
 docker run -it -v /users/ryan/data/methylationData/17879R/:/myOutputDir ctseqdocker
+
+# Command if you pulled container from DockerHub. Substitute correct version number in place of 'v0.0.1'
+docker run -it -v /users/ryan/data/methylationData/17879R/:/myOutputDir ryanhmiller/ctseq:v0.0.1
 ```
 '/users/ryan/data/methylationData/17879R/' represents the directory you want visible to your Docker container and it will be visible as '/myOutputDir' when you are in the container. You are more than welcome to put your fastq and reference (.fa) files in the same directory so you only have to mount one directory to your Docker container
 
@@ -78,16 +91,16 @@ exit
 If you want to use a Docker container of ctSeq but you do not have privileges to run Docker on your system (e.g. a high performance compute environments at a university, etc) you can run the Docker container of ctSeq in Singularity
 
 
-Download Docker image from cloud and make Singularity container for it ('.sif' file). Replace 'ctseqsingularity.sif' with whatever you want your Singularity container file to be called (with extension '.sif') and replace 'IMAGENUMBER' with the image version number (e.g. v0.0.2) you want to clone and build. You can find the latest image version numbers for ctSeq [here](https://hub.docker.com/r/ryanhmiller/ctseq/tags).
+Download Docker image from cloud and make Singularity container for it ('.sif' file). Replace 'ctseqsingularity.sif' with whatever you want your Singularity container file to be called (with extension '.sif') and replace 'v0.0.1' with the version of ctSeq you want to clone and build. The latest version number is found at the top of this README (a list of all the versions you can download are listed [here](https://hub.docker.com/r/ryanhmiller/ctseq/tags)).
 ```
-singularity build ctseqsingularity.sif docker://ryanhmiller/ctseq:IMAGENUMBER
+singularity build ctseqsingularity.sif docker://ryanhmiller/ctseq:v0.0.1
 ```
 
 Run ctSeq in Singularity. Your whole file system will be visible to Singularity so you won't need to mount any directories, etc.
 ```
 singularity exec ctseqtest.sif ctseq analyze \
 	--refDir /users/ryan/data/ref/breastCancerPanel \
-	--dir ~/ryan/data/methylationData/17879R \
+	--dir /users/ryan/data/methylationData/17879R \
 	--umiType separate \
 	--umiLength 12 \
 	--forwardExt R1_001.fastq.gz \
@@ -127,7 +140,7 @@ Now whenever you want to run ctSeq you will just want to activate this Conda env
 
 
 ## Files needed to run pipeline
-### Fragment reference file (required)
+### 1) Fragment reference file (required)
 Fasta file (with extension '.fa') containing the reference sequences of your desired patch PCR fragments. Please add 'AGAGAATGAGGAAGGTGGGGAGT' to the beginning of each reference sequence and 'AGTGTGGGAGGGTAGTTGGTGTT' to the end of each reference sequences. These are the adapter sequences attached to your fragments and including them in your reference sequences aids in cutting adapter and aligning your reads to the reference sequences.
 
 Example contents of reference file (```breastCancerPanelReference.fa```)
@@ -142,21 +155,19 @@ AGAGAATGAGGAAGGTGGGGAGTCAGCCCCGCCTCTGCCCCAGCGCCCCCAGCCCTCCGCCCCTCCACGTTCTCACCTGC
 AGAGAATGAGGAAGGTGGGGAGTTCAGACGTTCCATTCCCAGGGTGGCGCCGCTCGGACTCCGCGTCCCAGCATTCCCCGCACGAGCCCGGGAGCACTTCCGCCCTGTTGTGAAGTGGGTGTCTCGGTGGGTGAGTCCGGGTGGCGGGGCGGGGGCAGCAGTGTGGGAGGGTAGTTGGTGTT
 ```
 
-### Molecule depth fragment order file (required if plotting results)
-This is a file listing each fragment of your panel on a separate line in the order you wish the fragments to be ordered in the graph showing the molecule depth from each sample analyzed.
-
-E.g. 'methylationPanel_v2_fragOrder.txt'
-```
-chr7_27135538_27135700-cg00288327_cg03700462
-chr2_96990992_96991127-cg11270393
-chr2_220300022_220300129-cg13437337
-chr1_205399892_205399950-cg06849719
-chr8_104383627_104383781-cg20447655_cg11889769
-chr16_23193808_23193946-cg08681432
-chr2_27938289_27938451-cg03383158
-```
-### Fastq files (required)
+### 2) Fastq files (required)
 Files containing your methylation patch PCR sequencing data. Uncompressed (.fastq) or compressed (.fastq.gz) data files are acceptable
+
+### 3) Fragment info file (required if plotting results)
+This file will contain the row annotation information for your fragments when making heatmaps. The two necessary columns are the first column which should be the name of the fragments and another column called fragOrder showing the order you wish the fragments to be in when you make the molecule depth plot.
+
+testFragInfo.txt
+```
+Fragment	length	totalCGs	GCcontent	freeEnergy	fragOrder
+chr19_15342654_15342820-cg03562044	166	15	0.686746987951807	-63.5	39
+chr6_26044142_26044281-cg15387132_cg07701237_cg26426142	139	8	0.460431654676259	-30.5	166
+chr6_26044281_26044387-cg02221866	106	8	0.537735849056604	-31.5	136
+```
 
 
 ## Pipeline
@@ -253,16 +264,76 @@ ctseq plot
 
 Usage:
 ```
---molDepthOrder		Name of file containing name of each fragment on a new line in the order you wish your fragments to be arranged in the molecule depth plot.
---dir				(optional) Path to directory where you have the output files after running 'analyze' that will be used to create the plots.
+--dir		(optional) Path to directory where you have your plot input files. If no '--dir' is specified, ctseq will look in your current directory
+--fragInfo	(required) Name of file containing your fragment info for this sequencing run. If not in same directory as your plot input files, please designate full path to the 'fragInfo' file.
 ```
 
 Example usage:
 ```
 ctseq plot \
 	--dir /users/ryan/data/methylationData/17879R \
-	--molDepthOrder methylationPanel_v2_fragOrder.txt
+	--fragInfo testFragInfo.txt
 ```
+
+#### Fragment info file
+This tab-delimited file will contain the row annotation information for your fragments when making heatmaps. The two necessary columns are the first column with the fragment names and another column called ```fragOrder``` showing the order you wish the fragments to be in when you make the molecule depth plot.
+
+testFragInfo.txt
+```
+Fragment	length	totalCGs	GCcontent	freeEnergy	fragOrder
+chr19_15342654_15342820-cg03562044	166	15	0.686746987951807	-63.5	39
+chr6_26044142_26044281-cg15387132_cg07701237_cg26426142	139	8	0.460431654676259	-30.5	166
+chr6_26044281_26044387-cg02221866	106	8	0.537735849056604	-31.5	136
+```
+
+#### Sample info file (optional)
+When plotting, you can also make use of the sample info file. This is a tab-delimited file containing any extra information about each sample you want to be shown on your plots. Make sure your sample info file name ends in ```_sampleInfo.txt``` and is located in the same directory as your output files from ctseq.
+
+test_sampleInfo.txt
+```
+sample	info
+17879X1	1%_titration
+17879X2	0.75%_titration
+17879X3	0.50%_titration
+17879X4	0.25%_titration
+17879X5	0.01%_titration
+17879X6	0.00%_titration
+```
+
+
+### plot_multiple: Plot data together from more than one sequencing run
+This command combines the data from multiple sequencing runs (located in separate directories) and plots the data together.
+
+Command:
+```
+ctseq plot_multiple
+```
+
+Usage:
+```
+--dir		(optional) Path to directory where you want your plots to be created. If no '--dir' is given, ctseq will create the plots in your current working directory. Remember to include a file ending in '_directories.txt\ containing the paths of the directories containing the data you want to plot'
+--fragInfo	(required) Name of file containing your fragment info for this sequencing run. If not in same directory as '--dir', please designate full path to the 'fragInfo' file.
+--name		(required) Desired name to be used as the prefix for the file names of these plots
+```
+
+#### Directories file:
+To plot data from multiple sequencing runs, you will need a file containing the paths of each directory containing data you want to plot. Each path must be on a separate line and the file name must end in ```_directories.txt```. This file must be located at the directory indicated by ```--dir``` (or the current working directory if no ```--dir``` is specified)
+
+example_directories.txt
+```
+/users/ryan/data/methylationData/17879R
+/users/ryan/data/methylationData/17880R
+/users/ryan/data/methylationData/17883R
+/users/ryan/data/methylationData/17885R
+```
+Example usage:
+```
+ctseq plot_multiple \
+	--dir /users/ryan/data/methylationData/17879R \
+	--fragInfo testFragInfo.txt \
+	--name TitrationReplicates
+```
+
 
 ### *Advanced usage for ```analyze``` (under construction...)
 

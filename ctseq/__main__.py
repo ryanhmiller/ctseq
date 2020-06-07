@@ -150,8 +150,8 @@ def main():
     #################
     # plot multiple #
     #################
-    parser_plotmultiple = subparsers.add_parser('plot_multiple', help='plot output from multiple sequencing runs (directories) together')
-    parser_plotmultiple.add_argument('--outputDir', help='Path to directory where you want your plots to be created. If no path is given, ctseq will create the plots in your current working directory. Remember to include a file ending in \'_directories.txt\' containing the paths of the directories containing the data you want to plot', default=defaultDir)
+    parser_plotmultiple = subparsers.add_parser('plot_multiple', help='plot output from multiple sequencing runs together')
+    parser_plotmultiple.add_argument('--dir', help='Path to directory where you want your plots to be created. If no path is given, ctseq will create the plots in your current working directory. Remember to include a file ending in \'_directories.txt\' containing the paths of the directories containing the data you want to plot', default=defaultDir)
     parser_plotmultiple.add_argument('--fragInfo', help='Name of file containing your fragment info file for these combined plots. If not in same directory as your current working directory, please designate full path to the \'fragInfo\' file. See documentation for more info (required)', required=True)
     parser_plotmultiple.add_argument('--name', help='Desired name to be used as the prefix for the file names of these plots (required)', required=True)
 
