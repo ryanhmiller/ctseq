@@ -13,7 +13,7 @@ RUN conda install -c conda-forge openssl=1.0.2p=h14c3975_1002
 RUN conda install -c conda-forge r-base=3.5.1
 RUN conda install -c r r-ggplot2
 RUN conda install -c r r-reshape
-conda install -c r r-pheatmap
+RUN conda install -c r r-pheatmap
 
 RUN apt-get install git
 
