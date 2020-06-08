@@ -13,7 +13,7 @@ def checkFile(filePath,fileType):
 
 
 def run(args):
-    fileDir=args.fileDir
+    fileDir=args.dir
     fragInfoFile=args.fragInfo
     runName=args.name
 
