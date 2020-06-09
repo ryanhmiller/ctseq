@@ -159,13 +159,9 @@ AGAGAATGAGGAAGGTGGGGAGTTCAGACGTTCCATTCCCAGGGTGGCGCCGCTCGGACTCCGCGTCCCAGCATTCCCCG
 ### 2) Fastq files (required)
 Files containing your methylation patch PCR sequencing data. Uncompressed (.fastq) or compressed (.fastq.gz) data files are acceptable
 
-<<<<<<< HEAD
-### 3) Molecule depth fragment order file (required if plotting results)
-This is a file listing each fragment of your panel on a separate line in the order you wish the fragments to be ordered in the graph showing the molecule depth from each sample analyzed.
-=======
 ### 3) Fragment info file (required if plotting results)
 This file will contain the row annotation information for your fragments when making heatmaps. The two necessary columns are the first column which should be the name of the fragments and another column called fragOrder showing the order you wish the fragments to be in when you make the molecule depth plot.
->>>>>>> dev-branch
+
 
 testFragInfo.txt
 ```
@@ -277,10 +273,6 @@ Usage:
 Example usage:
 ```
 ctseq plot \
-<<<<<<< HEAD
-	--molDepthOrder methylationPanel_v2_fragOrder.txt \
-	--dir /users/ryan/data/methylationData/17879R
-=======
 	--dir /users/ryan/data/methylationData/17879R \
 	--fragInfo testFragInfo.txt
 ```
@@ -294,7 +286,6 @@ Fragment	length	totalCGs	GCcontent	freeEnergy	fragOrder
 chr19_15342654_15342820-cg03562044	166	15	0.686746987951807	-63.5	39
 chr6_26044142_26044281-cg15387132_cg07701237_cg26426142	139	8	0.460431654676259	-30.5	166
 chr6_26044281_26044387-cg02221866	106	8	0.537735849056604	-31.5	136
->>>>>>> dev-branch
 ```
 
 #### Sample info file (optional)
