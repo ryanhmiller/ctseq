@@ -1,3 +1,5 @@
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/ctseq/badges/installer/conda.svg)](https://anaconda.org/bioconda/ctseq)
+
 # ctSeq
 ctSeq is a pipeline to analyze methylation patch PCR data.
 
@@ -111,7 +113,7 @@ singularity exec ctseqtest.sif ctseq analyze \
 	--nameRun 17879R
 ```
 
-### Conda (not currently implemented)
+### Conda
 Install Conda if you do not have it already
 >Conda installation [instructions](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html#install-linux-silent) (Linux). Follow instructions to install 'Miniconda'
 
