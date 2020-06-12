@@ -8,7 +8,7 @@ from umi_tools import UMIClusterer
 import gc
 from . import utilities
 
-
+### I've had to delete some objects after use because the memory was ballooning on very large data sets
 
 ##### LOAD REFERENCE SEQUENCES INTO DICT #####
 def getRefSeq(refFileName):
@@ -85,7 +85,7 @@ def splitSamFile(samFileName,numProcesses):
                     intermedFile.write("".join(headerLines+allLines[myIndex:])) # the last temp file contains all the remaining lines
 
         # clear up RAM
-        # del allLines
+        del allLines
         print("done splitting reads into temp files",utilities.getDate())
 
     return(intermedFileNames)
@@ -340,7 +340,7 @@ def callMolecules(myMethylationInput):
             tempFile.write("\t".join(myOutputLine)+"\n")
 
     tempFile.close()
-
+    del myMethylationInput # we need this otherwise the memory balloons with large files
 
 def run(args):
     refDir=args.refDir
@@ -403,16 +403,21 @@ def run(args):
             p = Pool(processes)
 
             analyzeReads_multipleArgs=partial(analyzeReads, myRefSeq=refSeq, myRefCGindices=refCGindices) # see 'Example 2' - http://python.omics.wiki/multiprocessing_map/multiprocessing_partial_function_multiple_arguments, this is to use 1 dynamic fxn arguments and these 2 static arguments for multiprocessing
+
+            gc.collect()
             chunksAnalyzingReads=p.map(analyzeReads_multipleArgs, intermedFileNames)
-            print("exiting pool",utilities.getDate())
+            p.close()
+            p.join()
+
+            print("exiting pool",utilities.getDate()) # ADDED
 
             #### merge all the locusUMIreadDicts and readDepthDicts
             for i in range(1,len(chunksAnalyzingReads),1): # we are starting at second element in list; we are appending everything into the first dictionary in this list
                 mergeLocusUMIreadDicts(chunksAnalyzingReads[0].locusUMIreadsDict,chunksAnalyzingReads[i].locusUMIreadsDict)
-                chunksAnalyzingReads[i].locusUMIreadsDict="" # free up some RAM
+                del chunksAnalyzingReads[i].locusUMIreadsDict # free up some RAM
 
                 mergeReadDepthDicts(chunksAnalyzingReads[0].readDepthDict,chunksAnalyzingReads[i].readDepthDict)
-                chunksAnalyzingReads[i].readDepthDict="" # free up some RAM
+                del chunksAnalyzingReads[i].readDepthDict # free up some RAM
 
             # figure out how many loci to analyze in each process
             numLociPerChunk=len(refLociNames)//processes
@@ -422,7 +427,7 @@ def run(args):
             readDict=chunksAnalyzingReads[0].readDepthDict
 
             # free up some RAM
-            chunksAnalyzingReads[0].readDepthDict=""
+            del chunksAnalyzingReads[0].readDepthDict
 
             myIndex=0
             for i in range(0,processes,1):
@@ -444,14 +449,19 @@ def run(args):
                 splitUpMethInput.append(MethylationChunkInput(myLocusUMIreadsDict=tempDict, myRefCGindices=refCGindices, myConsensusCutoff=consensus, mySampleName=sampleName, myTempNumber=i, myOutputDir=samDir, myUMIcollapseThreshold=umiCollapseThreshold, myUMIcollapseAlg=umiCollapseAlg))
 
 
-            # clear up RAM
+            # clear up some RAM
             del chunksAnalyzingReads
 
             # finalResults=[]
             print("entering pool to analyze molecules for sample",sampleName,utilities.getDate())
             p = Pool(processes)
+
             # finalResults=p.map(analyzeMethylation, splitUpMethInput)
+
+            gc.collect()
             p.map(callMolecules, splitUpMethInput)
+            p.close()
+            p.join()                        
             print("exiting pool",utilities.getDate())
 
             # combining temp output files
