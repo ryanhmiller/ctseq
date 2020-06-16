@@ -25,7 +25,8 @@ def cutAdapters(args,fExt,rExt,newForExt,newRevExt):
     for forwardFile in allForwardFiles:
         sampleName=forwardFile.split("_")[0]
 
-        reverseFile=glob.glob(sampleName+'*'+rExt)[0]
+        #reverseFile=glob.glob(sampleName+'*'+rExt)[0]
+        reverseFile=sampleName+rExt #_reverseReadsWithUMIs.fastq
 
         forwardTrimmedFile=sampleName+newForExt
         reverseTrimmedFile=sampleName+newRevExt
@@ -97,7 +98,8 @@ def align(args,myRefDir,newForExt,newRevExt):
         sampleName=forwardFile.split("_")[0]
         sampleNames.append(sampleName)
 
-        reverseFile=glob.glob(sampleName+'*'+newRevExt)[0]
+        #reverseFile=glob.glob(sampleName+'*'+newRevExt)[0]
+        reverseFile=sampleName+newRevExt #'_reverseReadsWithUMIsTRIMMED.fastq'
 
         ###############################################################
         ## split fastq files up here if needed to run through Bismark #
