@@ -1,7 +1,7 @@
 [![Anaconda-Server Badge](https://anaconda.org/bioconda/ctseq/badges/installer/conda.svg)](https://anaconda.org/bioconda/ctseq)
 
-# ctSeq
-ctSeq is a pipeline to analyze methylation patch PCR data.
+# ctseq
+ctseq is a pipeline to analyze methylation patch PCR data.
 
 ### Current version:
  - v0.0.2
@@ -13,7 +13,7 @@ ctSeq is a pipeline to analyze methylation patch PCR data.
 ### Fastq file info
 
 
- - ctSeq assumes:
+ - ctseq assumes:
 	 - Each sample will have
 		 - one fastq file containing your forward reads
 		 - one fastq file containing your reverse reads
@@ -26,7 +26,7 @@ ctSeq is a pipeline to analyze methylation patch PCR data.
 	 - Your fastq files are named with your sample name first followed by "_"
 		 >e.g. 17675X9_200103_A00421_0144_BHJLTTDRXX_S35_L001_R1_001.fastq.gz
 '	 17675X9' is the sample name
--	ctSeq will analyze all fastq files in the designated directory. If you want samples from different sequencing runs analyzed together, please include them all in the same directory.
+-	ctseq will analyze all fastq files in the designated directory. If you want samples from different sequencing runs analyzed together, please include them all in the same directory.
 
 
 
@@ -35,7 +35,7 @@ ctSeq is a pipeline to analyze methylation patch PCR data.
 ### Docker
 
 #### Option 1: Download already-built container from DockerHub
-Replace 'v0.0.1' with the version of ctSeq you want to clone and build. The latest version number is found at the top of this README (a list of all the versions you can download are listed [here](https://hub.docker.com/r/ryanhmiller/ctseq/tags)).
+Replace 'v0.0.1' with the version of ctseq you want to clone and build. The latest version number is found at the top of this README (a list of all the versions you can download are listed [here](https://hub.docker.com/r/ryanhmiller/ctseq/tags)).
 ```
 # download docker file
 docker pull ryanhmiller/ctseq:v0.0.1
@@ -89,15 +89,15 @@ exit
 ```
 
 ### Singularity
-If you want to use a Docker container of ctSeq but you do not have privileges to run Docker on your system (e.g. a high performance compute environments at a university, etc) you can run the Docker container of ctSeq in Singularity
+If you want to use a Docker container of ctseq but you do not have privileges to run Docker on your system (e.g. a high performance compute environments at a university, etc) you can run the Docker container of ctseq in Singularity
 
 
-Download Docker image from cloud and make Singularity container for it ('.sif' file). Replace 'ctseqsingularity.sif' with whatever you want your Singularity container file to be called (with extension '.sif') and replace 'v0.0.1' with the version of ctSeq you want to clone and build. The latest version number is found at the top of this README (a list of all the versions you can download are listed [here](https://hub.docker.com/r/ryanhmiller/ctseq/tags)).
+Download Docker image from cloud and make Singularity container for it ('.sif' file). Replace 'ctseqsingularity.sif' with whatever you want your Singularity container file to be called (with extension '.sif') and replace 'v0.0.1' with the version of ctseq you want to clone and build. The latest version number is found at the top of this README (a list of all the versions you can download are listed [here](https://hub.docker.com/r/ryanhmiller/ctseq/tags)).
 ```
 singularity build ctseqsingularity.sif docker://ryanhmiller/ctseq:v0.0.1
 ```
 
-Run ctSeq in Singularity. Your whole file system will be visible to Singularity so you won't need to mount any directories, etc.
+Run ctseq in Singularity. Your whole file system will be visible to Singularity so you won't need to mount any directories, etc.
 ```
 singularity exec ctseqtest.sif ctseq analyze \
 	--refDir /users/ryan/data/ref/breastCancerPanel \
@@ -117,7 +117,7 @@ singularity exec ctseqtest.sif ctseq analyze \
 Install Conda if you do not have it already
 >Conda installation [instructions](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html#install-linux-silent) (Linux). Follow instructions to install 'Miniconda'
 
-Create new environment in which to run ctSeq (recommended)
+Create new environment in which to run ctseq (recommended)
 ```
 conda create --name myEnvName python=3.7
 ```
@@ -127,7 +127,7 @@ Activate Conda environment
 conda activate myEnvName
 ```
 
-Install ctSeq (from ```bioconda``` channel) in newly created environment
+Install ctseq (from ```bioconda``` channel) in newly created environment
 ```
 conda install -c bioconda ctseq
 ```
@@ -137,7 +137,7 @@ Step out of Conda environment
 conda deactivate
 ```
 
-Now whenever you want to run ctSeq you will just want to activate this Conda environment you just created and run your ctSeq commands.
+Now whenever you want to run ctseq you will just want to activate this Conda environment you just created and run your ctseq commands.
 
 
 ## Files needed to run pipeline
@@ -175,7 +175,7 @@ chr6_26044281_26044387-cg02221866	106	8	0.537735849056604	-31.5	136
 ## Pipeline
 ### Note about paths
 When designating paths to directories with ctseq, please use the full path ```/the/full/path/to/my/directory``` or the path relative to your home directory ```~/path/to/my/directory```
-If you do not use one of the directory flags (e.g. ```--refDir``` or ```--dir```), ctSeq will just look in your current directory for the necessary files
+If you do not use one of the directory flags (e.g. ```--refDir``` or ```--dir```), ctseq will just look in your current directory for the necessary files
 ### Step 1: Make methylation reference files
 This is necessary so we can take the fastq files from the chemically (bisulfite) or enzymatically (EM-seq) converted DNA and determine the methylation state of each CpG site.
 
