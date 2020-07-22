@@ -270,7 +270,7 @@ def writeRunStatsReport(myListOfLociDicts,myRefFrags,mySampleNames,myRunName):
             methCpG='0'
             methCHG='0'
             methUnknown='0'
-
+            
             if bismarkStatsContainer[sample].bismarkTotalReads != 0:
                 percentReadsAligned=str(round((bismarkStatsContainer[sample].bismarkAlignedReads/bismarkStatsContainer[sample].bismarkTotalReads)*100,1))
 

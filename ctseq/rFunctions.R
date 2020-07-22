@@ -173,6 +173,17 @@ plotData=function(runName,fragInfoFileName,sampleStats,totalMolFile,methMolFile,
   colFontSize=6
   fontSize=6
   
+  if(ncol(methMolFile)>25 && ncol(methMolFile)<40){
+    colFontSize=4
+  }
+  else if(ncol(methMolFile)>=40){
+    colFontSize=3
+  }
+  
+  if(nrow(fragInfo)>160){
+    rowFontSize=2
+  }
+  
   ### total molecule heatmap ###
   rownames(totalMolFile)=totalMolFile$Locus
   totalMolFile$Locus=NULL
@@ -193,7 +204,7 @@ plotData=function(runName,fragInfoFileName,sampleStats,totalMolFile,methMolFile,
   methMolHeatmapName=paste(runName,"_methylatedMoleculesHeatmap.pdf",sep = "")
   
   pdf(methMolHeatmapName)
-  pheatmap(log2(methMolFile[fragOrder_heatmaps,]+1), main=paste(runName,"Methylated Molecules"), fontsize_row=rowFontSize, fontsize_col=colFontSize, fontsize = fontSize,
+  pheatmap(log2(methMolFile[fragOrder_heatmaps,]+1), main=paste(runName,"Methylated Molecules (log2)"), fontsize_row=rowFontSize, fontsize_col=colFontSize, fontsize = fontSize,
            show_rownames = T, cluster_cols=F, cluster_rows=F, color=colorRampPalette(c("navy","white","firebrick3","firebrick4"))(50),
            annotation_col = sampleStats, annotation_row = fragInfo, na_col = "snow4", annotation_colors = my_ann_colors)
   dev.off()
