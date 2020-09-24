@@ -14,6 +14,12 @@ RUN conda create -n ctseqEnv python=3.7 && \
     conda install -c r r-reshape && \
     conda install -c conda-forge r-pheatmap && \
     apt-get install git && \
-    git clone https://github.com/ryanhmiller/ctseq.git && \
-    python ./ctseq/setup.py install && \
-    rm -r ctseq
+    git clone https://github.com/ryanhmiller/ctseq.git
+
+
+WORKDIR /ctseq
+RUN python setup.py install
+
+WORKDIR /
+
+RUN rm -r ctseq

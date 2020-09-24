@@ -4,7 +4,7 @@
 ctseq is a pipeline to analyze methylation patch PCR data.
 
 ### Current version:
- - v0.0.2
+ - v0.0.3
 
 ### Requirements
 
