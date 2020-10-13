@@ -2,19 +2,21 @@ FROM continuumio/miniconda3
 
 RUN conda create -n ctseqEnv python=3.7 && \
     echo "source activate ctseqEnv" > ~/.bashrc && \
-    conda install -c bioconda cutadapt && \
-    conda install -c bioconda bismark && \
+    conda install -c bioconda cutadapt=1.18 && \
+    conda install -c bioconda bismark=0.22.3 && \
     conda install -c bioconda samtools=1.9 && \
-    conda install -c bioconda umi_tools && \
-    conda install -c bioconda simplesam && \
-    conda install -c conda-forge ncurses=6.1=he6710b0_1 && \
-    conda install -c conda-forge openssl=1.0.2p=h14c3975_1002 && \
+    conda install -c bioconda umi_tools=1.0.1 && \
+    conda install -c bioconda simplesam=0.1.3.1 && \
+    conda install -c conda-forge ncurses=6.1 && \
+    conda install -c conda-forge openssl=1.0.2p && \
     conda install -c conda-forge r-base=3.5.1 && \
-    conda install -c r r-ggplot2 && \
-    conda install -c r r-reshape && \
-    conda install -c conda-forge r-pheatmap && \
+    conda install -c r r-ggplot2=3.0.0 && \
+    conda install -c r r-reshape=0.8.7 && \
+    conda install -c conda-forge r-pheatmap=1.0.12 && \
     apt-get install git && \
-    git clone https://github.com/ryanhmiller/ctseq.git
+    git clone https://github.com/ryanhmiller/ctseq.git && \
+    cp /usr/local/ctseq/ctseq_wrapper /usr/bin/ && \
+    chmod +x /usr/bin/ctseq_wrapper
 
 
 WORKDIR /ctseq

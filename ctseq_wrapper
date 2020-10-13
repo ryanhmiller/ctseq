@@ -1,0 +1,10 @@
+#!/bin/bash
+
+## this script is a wrapper for running on platforms such as Seven Bridges so you can copy the output of the pipeline to the instance directory to be saved
+
+# run ctseq, pass in parameters from commandline
+"$@"
+
+# move output files (except .fastqs) to instance directory
+shopt -s extglob
+mv !(*.fastq*) ~/
