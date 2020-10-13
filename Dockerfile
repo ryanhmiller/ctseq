@@ -14,14 +14,14 @@ RUN conda create -n ctseqEnv python=3.7 && \
     conda install -c r r-reshape=0.8.7 && \
     conda install -c conda-forge r-pheatmap=1.0.12 && \
     apt-get install git && \
-    git clone https://github.com/ryanhmiller/ctseq.git && \
-    cp /usr/local/ctseq/ctseq_wrapper /usr/bin/ && \
-    chmod +x /usr/bin/ctseq_wrapper
+    git clone https://github.com/ryanhmiller/ctseq.git
 
 
 WORKDIR /ctseq
-RUN python setup.py install
+RUN cp ctseq_wrapper ../../bin && \
+    python setup.py install
 
 WORKDIR /
 
-RUN rm -r ctseq
+RUN rm -r ctseq && \
+    chmod +x ../bin/ctseq_wrapper
