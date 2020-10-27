@@ -18,9 +18,9 @@ RUN conda create -n ctseqEnv python=3.7 && \
 
 
 WORKDIR /ctseq
-RUN python setup.py install
+RUN python setup.py install \
+    cp wrapper_ctseq ../../bin && \
+    chmod +x ../bin/wrapper_ctseq
 
 WORKDIR /
-RUN cp wrapper_ctseq ../../bin && \
-    chmod +x ../bin/wrapper_ctseq && \
-    rm -r ctseq
+RUN rm -r ctseq

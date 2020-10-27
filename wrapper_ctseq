@@ -3,8 +3,10 @@
 ## this script is a wrapper for running on platforms such as Seven Bridges so you can copy the output of the pipeline to the instance directory to be saved
 
 # run ctseq, pass in parameters from commandline
-"$@"
+ctseq "$@"
 
 # move output files (except .fastqs) to instance directory
+targetDir=$3
+cd $targetDir
 shopt -s extglob
 mv !(*.fastq*) ~/
