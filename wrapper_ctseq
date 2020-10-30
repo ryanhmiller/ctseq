@@ -8,6 +8,5 @@ ctseq "$@"
 # move output files (except .fastqs) to instance directory
 targetDir=$3
 cd $targetDir
-ls
-#shopt -s extglob
-#mv !(*.fastq*) ~/
+shopt -s extglob
+mv !(*.fastq*) ~/
